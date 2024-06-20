@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="tiff"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="clang"/>
+		<Option virtualFolders="CMake Files\;CMake Files\third_party\;CMake Files\third_party\libpng-1.6.39\;CMake Files\third_party\libpng-1.6.39\scripts\;CMake Files\third_party\jpeg-9e\;CMake Files\third_party\tiff-4.0.10\;CMake Files\third_party\tiff-4.0.10\libtiff\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiffxx">
+				<Option output="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/libtiffxx.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/jpeg-9e"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/15.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 tiffxx"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiffxx/fast">
+				<Option output="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/libtiffxx.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/jpeg-9e"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/15.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 tiffxx/fast"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiff">
+				<Option output="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/libtiff.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/jpeg-9e"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/15.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 tiff"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="tiff/fast">
+				<Option output="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/libtiff.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add option="-D_FILE_OFFSET_BITS=64"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/jpeg-9e"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/15.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 tiff/fast"/>
+					<CompileFile command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j10 -f &quot;/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/libtiff/tiffconf.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/libtiff.def">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_aux.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_close.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_codec.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_color.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_compress.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dir.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dir.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dirinfo.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dirread.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dirwrite.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_dumpmode.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_error.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_extension.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_fax3.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_fax3.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_fax3sm.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_flush.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_getimage.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_jbig.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_jpeg.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_jpeg_12.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_luv.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_lzma.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_lzw.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_next.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_ojpeg.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_open.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_packbits.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_pixarlog.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_predict.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_predict.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_print.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_read.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_stream.cxx">
+			<Option target="tiffxx"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_strip.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_swab.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_thunder.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_tile.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_unix.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_version.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_warning.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_webp.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_write.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_zip.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_zstd.c">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tiff.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tiffio.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tiffio.hxx">
+			<Option target="tiffxx"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tiffvers.h">
+			<Option target="tiff"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/libpng-config.in">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/libpng.pc.in">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/checksym.awk">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/dfn.awk">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/genchk.cmake.in">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/genout.cmake.in">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/gensrc.cmake.in">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/libpng-1.6.39/scripts/options.awk">
+			<Option virtualFolder="CMake Files\third_party\libpng-1.6.39\scripts\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/jpeg-9e/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\third_party\jpeg-9e\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\third_party\tiff-4.0.10\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\third_party\tiff-4.0.10\libtiff\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tif_config.h.cmake.in">
+			<Option virtualFolder="CMake Files\third_party\tiff-4.0.10\libtiff\"/>
+		</Unit>
+		<Unit filename="/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/third_party/tiff-4.0.10/libtiff/tiffconf.h.cmake.in">
+			<Option virtualFolder="CMake Files\third_party\tiff-4.0.10\libtiff\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

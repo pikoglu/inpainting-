@@ -1,0 +1,339 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						17,
+						18,
+						20
+					]
+				},
+				{
+					"build" : "third_party/libpng-1.6.39",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "third_party/libpng-1.6.39",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					]
+				},
+				{
+					"build" : "third_party/jpeg-9e",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "third_party/jpeg-9e",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "third_party/tiff-4.0.10",
+					"childIndexes" : 
+					[
+						4
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.11"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "third_party/tiff-4.0.10"
+				},
+				{
+					"build" : "third_party/tiff-4.0.10/libtiff",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.11"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 2,
+					"source" : "third_party/tiff-4.0.10/libtiff",
+					"targetIndexes" : 
+					[
+						19,
+						21
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						2
+					],
+					"name" : "StereoAdpativeWeights",
+					"targetIndexes" : 
+					[
+						4,
+						17,
+						18,
+						20
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "libpng",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3,
+						4
+					],
+					"name" : "tiff",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						19,
+						21
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "genfiles::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-genfiles-Debug-09825a10f2ef548cff6a.json",
+					"name" : "genfiles",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "genprebuilt::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-genprebuilt-Debug-743a76c815d84b0db794.json",
+					"name" : "genprebuilt",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "gensym::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-gensym-Debug-461f701d5874d79a36ef.json",
+					"name" : "gensym",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "genvers::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-genvers-Debug-5afe301d67d104060f87.json",
+					"name" : "genvers",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "jpeg::@149e25769698a0e3c7f7",
+					"jsonFile" : "target-jpeg-Debug-f1cd6740f4b03e23e6cd.json",
+					"name" : "jpeg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "png_static::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-png_static-Debug-bf69b9148cd015f83478.json",
+					"name" : "png_static",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "pnglibconf_c::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-pnglibconf_c-Debug-9d3b17573fc7d536f0a3.json",
+					"name" : "pnglibconf_c",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "pnglibconf_h::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-pnglibconf_h-Debug-a17d4b233879ccff6011.json",
+					"name" : "pnglibconf_h",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "pnglibconf_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-pnglibconf_out-Debug-bd86bbe7a6b27ae1bd1b.json",
+					"name" : "pnglibconf_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "pngprefix_h::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-pngprefix_h-Debug-bbd805d97a7e46d82f1b.json",
+					"name" : "pngprefix_h",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_intprefix_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_intprefix_out-Debug-e8489c87ba5367f95bcf.json",
+					"name" : "scripts_intprefix_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_pnglibconf_c::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_pnglibconf_c-Debug-8873d3118f9c3820cb89.json",
+					"name" : "scripts_pnglibconf_c",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_prefix_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_prefix_out-Debug-f615bb983ed31240afda.json",
+					"name" : "scripts_prefix_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_sym_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_sym_out-Debug-c6f75f29a7a6188fd6ec.json",
+					"name" : "scripts_sym_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_symbols_chk::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_symbols_chk-Debug-4b11ac8da9eeffbe141d.json",
+					"name" : "scripts_symbols_chk",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_symbols_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_symbols_out-Debug-3bfe5038c4c42ee4fab0.json",
+					"name" : "scripts_symbols_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "scripts_vers_out::@5bad5cffc2b16434b018",
+					"jsonFile" : "target-scripts_vers_out-Debug-f802f93759b175a7a98b.json",
+					"name" : "scripts_vers_out",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "show_weights::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-show_weights-Debug-edeeb83f495913d41ed0.json",
+					"name" : "show_weights",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "stereoAdaptiveWeights::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-stereoAdaptiveWeights-Debug-8e37a699df84b1ad27ac.json",
+					"name" : "stereoAdaptiveWeights",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "tiff::@92989a7fa54539837958",
+					"jsonFile" : "target-tiff-Debug-171646af9b2954f1688b.json",
+					"name" : "tiff",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tiff2png::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tiff2png-Debug-8e7dfa6e4accda6c90ca.json",
+					"name" : "tiff2png",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "tiffxx::@92989a7fa54539837958",
+					"jsonFile" : "target-tiffxx-Debug-df44447ca58f50059155.json",
+					"name" : "tiffxx",
+					"projectIndex" : 2
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/build",
+		"source" : "/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}

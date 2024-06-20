@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/image.cpp
+image.h
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/image.h
+nan.h
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/nan.h
+io_png.h
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/io_png.h
+io_tiff.h
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/io_tiff.h
+algorithm
+-
+cassert
+-
+
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/image.h
+vector
+-
+
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/io_png.h
+stddef.h
+-
+
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/io_tiff.h
+stddef.h
+-
+
+/Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4/nan.h
+cmath
+-
+

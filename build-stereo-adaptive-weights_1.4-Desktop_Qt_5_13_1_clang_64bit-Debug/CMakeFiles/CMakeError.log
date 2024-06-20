@@ -1,0 +1,134 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library 'System' not found
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++ 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library 'c++' not found
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Checking whether the ASM compiler is GNU using "--version" did not match "(GNU assembler)|(GCC)|(Free Software Foundation)":
+Apple clang version 15.0.0 (clang-1500.3.9.4)
+Target: x86_64-apple-darwin23.5.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+Performing C SOURCE FILE Test HAVE_LD_VERSION_SCRIPT failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_560f3/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_560f3.dir/build.make CMakeFiles/cmTC_560f3.dir/build
+Building C object CMakeFiles/cmTC_560f3.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -DHAVE_LD_VERSION_SCRIPT -Wl,--version-script=/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/conftest.map -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_560f3.dir/src.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/src.c
+clang: warning: -Wl,--version-script=/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/conftest.map: 'linker' input unused [-Wunused-command-line-argument]
+Linking C executable cmTC_560f3
+/Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_560f3.dir/link.txt --verbose=1
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang  -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing -DHAVE_LD_VERSION_SCRIPT -Wl,--version-script=/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/conftest.map -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/cmTC_560f3.dir/src.c.o  -o cmTC_560f3 
+ld: unknown options: --version-script=/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/third_party/tiff-4.0.10/conftest.map 
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+make[1]: *** [cmTC_560f3] Error 1
+make: *** [cmTC_560f3/fast] Error 2
+
+
+Source file was:
+int main(void){return 0;}
+Determining if the include file io.h exists failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_a503b/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_a503b.dir/build.make CMakeFiles/cmTC_a503b.dir/build
+Building C object CMakeFiles/cmTC_a503b.dir/CheckIncludeFile.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_a503b.dir/CheckIncludeFile.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'io.h' file not found
+#include <io.h>
+         ^~~~~~
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_a503b.dir/CheckIncludeFile.c.o] Error 1
+make: *** [cmTC_a503b/fast] Error 2
+
+
+
+Determining if the jbg_newlen exist failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_ab59c/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_ab59c.dir/build.make CMakeFiles/cmTC_ab59c.dir/build
+Building C object CMakeFiles/cmTC_ab59c.dir/CheckSymbolExists.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_ab59c.dir/CheckSymbolExists.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: 'jbig.h' file not found
+#include <jbig.h>
+         ^~~~~~~~
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_ab59c.dir/CheckSymbolExists.c.o] Error 1
+make: *** [cmTC_ab59c/fast] Error 2
+
+
+File /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <jbig.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef jbg_newlen
+  return ((int*)(&jbg_newlen))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the include file GL/gl.h exists failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_16c6a/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_16c6a.dir/build.make CMakeFiles/cmTC_16c6a.dir/build
+Building C object CMakeFiles/cmTC_16c6a.dir/CheckIncludeFile.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_16c6a.dir/CheckIncludeFile.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'GL/gl.h' file not found
+#include <GL/gl.h>
+         ^~~~~~~~~
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_16c6a.dir/CheckIncludeFile.c.o] Error 1
+make: *** [cmTC_16c6a/fast] Error 2
+
+
+
+Determining if the include file GL/glu.h exists failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_fea4c/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_fea4c.dir/build.make CMakeFiles/cmTC_fea4c.dir/build
+Building C object CMakeFiles/cmTC_fea4c.dir/CheckIncludeFile.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_fea4c.dir/CheckIncludeFile.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'GL/glu.h' file not found
+#include <GL/glu.h>
+         ^~~~~~~~~~
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_fea4c.dir/CheckIncludeFile.c.o] Error 1
+make: *** [cmTC_fea4c/fast] Error 2
+
+
+
+Determining if the include file GL/glut.h exists failed with the following output:
+Change Dir: /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_de9b7/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make -f CMakeFiles/cmTC_de9b7.dir/build.make CMakeFiles/cmTC_de9b7.dir/build
+Building C object CMakeFiles/cmTC_de9b7.dir/CheckIncludeFile.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang   -Wall -Winline -W -Wformat-security -Wpointer-arith -Wdisabled-optimization -Wno-unknown-pragmas -Wdeclaration-after-statement -fstrict-aliasing  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk   -o CMakeFiles/cmTC_de9b7.dir/CheckIncludeFile.c.o   -c /Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+/Users/felixfourreau/Desktop/projet_vacances/build-stereo-adaptive-weights_1.4-Desktop_Qt_5_13_1_clang_64bit-Debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c:1:10: fatal error: 'GL/glut.h' file not found
+#include <GL/glut.h>
+         ^~~~~~~~~~~
+1 error generated.
+make[1]: *** [CMakeFiles/cmTC_de9b7.dir/CheckIncludeFile.c.o] Error 1
+make: *** [cmTC_de9b7/fast] Error 2
+
+
+
