@@ -153,15 +153,16 @@ Image Image::createSSDImage(int patchSize, int ip) const {
     int xp = centers[2 * ip];
     int yp = centers[2 * ip + 1];
 
-    float ssdMax = 0.0f;
+    float ssdMax = float(0);
 
     for (int j = 0; j < numpatchs; ++j) {
         int x2 = centers[2 * j];
         int y2 = centers[2 * j + 1];
         int ssd_patch = this->ssd(xp, yp, x2, y2, patchSize);
-        ssdMax = std::max(ssdMax, static_cast<float>(ssd_patch));
+        ssdMax = std::max(ssdMax, static_cast<float>(ssd_patch)); //Attention il est sans doute nécessaire de
     }
 
+    //etape de normalisation
     for (int j = 0; j < numpatchs; ++j) {
         int x2 = centers[2 * j];
         int y2 = centers[2 * j + 1];
@@ -197,4 +198,26 @@ bool save_image(const char* fileName, const Image& img) {
 
     delete[] out;
     return ok;
+}
+
+int Image::getPatchIndexFromCoordinates(int x, int y, int patchSize) const {
+    int width = this->width();
+    int height = this->height();
+    int numPatches = (width - patchSize + 1) * (height - patchSize + 1);
+    int halfPatchSize = patchSize / 2;
+
+    int* centers = this->listPatchCenters(patchSize);
+
+    for (int i = 0; i < numPatches; ++i) {
+        int centerX = centers[i * 2];
+        int centerY = centers[i * 2 + 1];
+
+        if (x ==centerX  && y ==centerY ) {
+            delete[] centers;
+            return i;
+        }
+    }
+
+    delete[] centers;
+    return -1; // Pixel not found in any patch
 }

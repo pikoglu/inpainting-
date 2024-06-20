@@ -122,6 +122,7 @@ int main(int argc, char *argv[]) {
     if(!paramD.check() || !paramOcc.check())
         return 1;
     */
+
     if (argc!=2 ){
         std::cout<<argc<<std::endl;
         std::cout<<argv[0]<<std::endl;
@@ -147,21 +148,27 @@ int main(int argc, char *argv[]) {
     int xp2=centers[2*index_xp2];
     int yp2=centers[2*index_xp2+1];
 
-    int distance=im1.ssd(xp1,yp1,xp2,yp2,patchsize);
 
-    std::cout<<distance<<std::endl;
 
-    int ip=100;
+    int ip=im1.getPatchIndexFromCoordinates(200,200,patchsize);
     Image ssdImage = im1.createSSDImage(patchsize,ip);
 
 
 
     // Utile pour enregistrer l'image
-    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd.png", ssdImage)) {
+    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd1.png", ssdImage)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
 
+    ip=im1.getPatchIndexFromCoordinates(50,50,patchsize);
+    ssdImage = im1.createSSDImage(patchsize,ip);
+
+    // Utile pour enregistrer l'image
+    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd2.png", ssdImage)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
     /*
     if(width!=im2.width() || height!=im2.height()) {

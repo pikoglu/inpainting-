@@ -53,6 +53,8 @@ public:
     int* listPatchCenters(int patchSize) const;
     int ssd(int xp1, int yp1, int xp2, int yp2, int w) const;
     Image createSSDImage(int patchSize,int ip) const;
+    Image patchVisualization(int patchSize)const;
+    int getPatchIndexFromCoordinates(int x, int y, int patchSize) const ;
 
     //
 
