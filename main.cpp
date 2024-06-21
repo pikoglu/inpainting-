@@ -50,38 +50,32 @@ Image loadImage(const char* name) {
     return im;
 }
 
-void printCenters(const std::vector<std::pair<int, int> >& centers) {
-    for (const auto& center : centers) {
-        std::cout << "(" << center.first << ", " << center.second << ")" << std::endl;
-    }
-}
+
 
 /// Main program
 int main(int argc, char *argv[]) {
 
-    if (argc!=3 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
+    if (argc!=4 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
         std::cout<<argc<<std::endl;
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
+    int patchsize=11;
 
-    Image im1 = loadImage(argv[1]);
+    Image imageInput = loadImage(argv[1]);
+    Image imageMask =loadImage(argv[2]);
 
-    const int width=im1.width();
-    const int height=im1.height();
+    Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
-    int patchsize=5;
-
-
-
-    //partie mask
-    int numberUniquePatchWidth =(2*width)/patchsize -1;//théoriquement pas besoin de repasser en float
-    int numberUniquePatchHeight =(2*height)/patchsize -1;
-    Image UniquePatch(numberUniquePatchWidth,numberUniquePatchHeight);
-    UniquePatch.initializeToBool();
+    imageExtendedMask.listNodesOverMask(imageMask,patchsize);
 
 
-
+    // Utile pour enregistrer l'image
+    std::cout<<"ccc"<<std::endl;
+    if(! save_image(argv[3], imageMask)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
 
 
@@ -91,21 +85,22 @@ int main(int argc, char *argv[]) {
 
 
 
-    int* centers=im1.listPatchCenters(patchsize);
-    std::cout<<(centers[1])<<std::endl;
-
-    int index_xp1=10;
-    int index_xp2=11;
-
-    int xp1=centers[2*index_xp1];
-    int yp1=centers[2*index_xp1+1];
-    int xp2=centers[2*index_xp2];
-    int yp2=centers[2*index_xp2+1];
 
 
 
-    int ip=im1.getPatchIndexFromCoordinates(200,200,patchsize);
-    Image ssdImage = im1.createSSDImage(patchsize,ip);
+
+
+
+
+    //int* centers=im1.listPatchCenters(patchsize);
+    //std::cout<<(centers[1])<<std::endl;
+
+
+
+
+
+    //int ip=im1.getPatchIndexFromCoordinates(200,200,patchsize);
+    //Image ssdImage = im1.createSSDImage(patchsize,ip);
 
 
     /*
@@ -116,8 +111,8 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    ip=im1.getPatchIndexFromCoordinates(50,50,patchsize);
-    ssdImage = im1.createSSDImage(patchsize,ip);
+    //ip=im1.getPatchIndexFromCoordinates(50,50,patchsize);
+    //ssdImage = im1.createSSDImage(patchsize,ip);
     /*
     // Utile pour enregistrer l'image
     if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd2.png", ssdImage)) {

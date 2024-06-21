@@ -188,7 +188,6 @@ bool save_image(const char* fileName, const Image& img) {
 */
 
 
-#include <algorithm> // pour std::clamp
 
 bool save_image(const char* fileName, const Image& img) {
     const int w = img.width();
@@ -247,27 +246,117 @@ void Image::initializeToBool(){
 }
 
 
-void Image::getPatchesOverMask(Image &boolImage, const Image &imageMask, int patchsize) {
-    int width = imageMask.width();
-    int height = imageMask.height();
 
-    int numberUniquePatchWidth = (2 * width) / patchsize - 1;
-    int numberUniquePatchHeight = (2 * height) / patchsize - 1;
+Image Image::extendMask(int patchsize)const {
+    assert(channels() == 1);
+    int width = this->width();
+    int height = this->height();
 
-    // Il existe surement des manières plus rapide de faire ça, notamment en ajoutant pour un pixels les 4 patchs associés
+
+    Image extendedMask=(*this).clone();
+    extendedMask.gray();
+
+    // Parcours des lignes
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (imageMask(x, y) >128) {
-                int patchX = (2 * x) / patchsize;
-                int patchY = (2 * y) / patchsize;
+            if ((*this)(x, y) > 128) {
+                for (int i = std::max(0, x - patchsize+1); i < x; ++i) {
+                    extendedMask(i, y) = 255;
+                }
+                x++;
+                while(x<width && (*this)(x, y) > 128){x++;}
 
-
-                if (patchX < numberUniquePatchWidth && patchY < numberUniquePatchHeight) {
-                    boolImage(patchX, patchY) = 255;
+                if (x<width){
+                    for (int i = std::min(width-1, x + patchsize-1); i >= x; --i) {//attention x n'est pas dans le masque
+                        extendedMask(i, y) = 255;
+                    }
                 }
 
-                x += patchsize / 2;
             }
         }
     }
+
+    Image extendedMaskTemp=extendedMask.clone();
+
+    for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                if ((extendedMaskTemp)(x, y) > 128) {
+                    for (int i = std::max(0, y - patchsize + 1); i < y; ++i) {
+                        extendedMask(x, i) = 255;}
+                    y++;
+                    while (y < height && (extendedMaskTemp)(x, y) > 128) {
+                        y++;
+                    }
+                    if (y < height) {
+                        for (int i = y; i < std::min(height, y + patchsize - 1); ++i) {
+                            extendedMask(x, i) = 255;
+                    }
+                }
+            }
+        }
+    }
+
+    return extendedMask;
+
 }
+
+
+void Image::listNodesOverMask( Image& imagemask,  int patchsize) const{
+
+
+    //Ne fonctionne que dans le cas impaire pour l'instant
+
+
+    int numberUniquePatchWidth = (width()-patchsize)/((patchsize-1)/2)+1;
+    int numberUniquePatchHeight = (height()-patchsize)/((patchsize-1)/2)+1;
+
+    int* listNodes=new int[2*numberUniquePatchWidth*numberUniquePatchHeight];
+
+    int halfPatchSize = patchsize / 2;
+    int index=0;
+    for (int y=patchsize/2+1;y<height()-patchsize/2;y+=patchsize/2){
+        for (int x=patchsize/2+1;x<width()-patchsize/2;x+=patchsize/2){//attention aux nombres paires
+
+
+
+             if ((*this)(x,y)>128){
+
+                 (imagemask)(x,y,0)=255;
+                 (imagemask)(x,y,1)=0;
+                 (imagemask)(x,y,2)=0;
+
+
+
+
+
+             }
+         }
+
+    }
+}
+
+
+
+void Image::displayNodesOverMask(int* listNodes, int patchSize){
+    std::cout<<channels()<<std::endl;
+    std::cout<<"caca"<<std::endl;
+    int numberUniquePatchWidth = (2 * width()) / patchSize - 1;
+    int numberUniquePatchHeight = (2 * height()) / patchSize - 1;
+
+
+    int x;
+    int y;
+
+    for (int index=0;index<numberUniquePatchWidth*numberUniquePatchHeight;index+=2){
+        x=listNodes[index];
+        y=listNodes[index+1];
+        std::cout<<index<<std::endl;
+        std::cout<<x<<std::endl;
+        std::cout<<y<<std::endl;
+        (*this)(x,y,0)=255;
+        (*this)(x,y,1)=0;
+        (*this)(x,y,2)=0;
+    }
+}
+

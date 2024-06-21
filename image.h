@@ -56,7 +56,9 @@ public:
     Image patchVisualization(int patchSize)const;
     int getPatchIndexFromCoordinates(int x, int y, int patchSize) const ;
     void initializeToBool();
-    void getPatchesOverMask(Image &boolImage, const Image &imageMask, int patchsize);
+    void listNodesOverMask( Image& imagemask,  int patchsize) const;
+    Image extendMask(int patchsize) const;
+    void displayNodesOverMask(int* listNodes, int patchSize);
     //
 
 
