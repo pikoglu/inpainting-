@@ -16,8 +16,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "disparity.h"
-#include "occlusion.h"
 #include "image.h"
 #include "cmdLine.h"
 #include "io_png.h"
@@ -29,9 +27,7 @@ static const char* SUFFIX1=".tif";     ///< Suffix for output 1: dense disparity
 static const char* SUFFIX2="_occ.tif"; ///< Suffix for output 2: LR filtered
 static const char* SUFFIX3="_pp.tif";  ///< Suffix for output 3: post_processed
 
-#ifndef COMB
-#error "The macro COMB must be set to one of the allowed values at compilation"
-#endif
+
 
 /// Load color image
 Image loadImage(const char* name) {

@@ -16,9 +16,7 @@
  */
 
 #include "image.h"
-#include "nan.h"
 #include "io_png.h"
-#include "io_tiff.h"
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -85,23 +83,6 @@ Image Image::gray() const {
     return out;
 }
 
-/// Save \a disp map in float TIFF image.
-bool save_disparity(const char* fileName, const Image& disp,
-                    int dMin, int dMax) {
-    const int w=disp.width(), h=disp.height();
-    float *out = new float[w*h], *o=out;
-    for(int y=0; y<h; y++)
-        for(int x=0; x<w; x++) {
-            float v = disp(x,y);
-            if(! (is_number(v) &&
-                  static_cast<float>(dMin)<=v && v<=static_cast<float>(dMax)))
-                v = NaN;
-            *o++ = v;
-        }
-    bool ok = (io_tiff_write_f32(fileName, out, w, h, 1) == 0);
-    delete [] out;
-    return ok;
-}
 
 
 //Felix
