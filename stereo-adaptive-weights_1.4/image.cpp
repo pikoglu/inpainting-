@@ -21,7 +21,7 @@
 #include "io_tiff.h"
 #include <algorithm>
 #include <cassert>
-
+#include <iostream>
 /// Constructor
 ///
 /// The main interest of this one is to allow arrays of Image.
@@ -168,7 +168,12 @@ Image Image::createSSDImage(int patchSize, int ip) const {
         int y2 = centers[2 * j + 1];
         int ssd_patch = this->ssd(xp, yp, x2, y2, patchSize);
         float ssdNormalized = static_cast<float>(ssd_patch) / ssdMax;
-        grayImage(x2, y2) = ssdNormalized * 255.0f;
+        if (xp==x2 and yp==y2){
+            grayImage(x2, y2) = 255;
+            std::cout<<ssdNormalized * 255.0f<<std::endl;
+            std::cout<<x2<<" "<<y2<<std::endl;} //noir proche, blanc loin
+        else{
+        grayImage(x2, y2) = ssdNormalized * 255.0f;}
     }
 
     delete[] centers;
@@ -177,6 +182,7 @@ Image Image::createSSDImage(int patchSize, int ip) const {
 }
 
 
+/*
 bool save_image(const char* fileName, const Image& img) {
     const int w = img.width();
     const int h = img.height();
@@ -187,7 +193,6 @@ bool save_image(const char* fileName, const Image& img) {
 
     for (int channel = 0; channel < c; ++channel) {
         for (int y = 0; y < h; ++y) {
-
             for (int x = 0; x < w; ++x) {
                 *o++ = img(x, y, channel);
             }
@@ -199,6 +204,35 @@ bool save_image(const char* fileName, const Image& img) {
     delete[] out;
     return ok;
 }
+*/
+
+
+#include <algorithm> // pour std::clamp
+
+bool save_image(const char* fileName, const Image& img) {
+    const int w = img.width();
+    const int h = img.height();
+    const int c = img.channels();
+
+    // Changer le type de float* à unsigned char*
+    unsigned char* out = new unsigned char[w * h * c];
+    unsigned char* o = out;
+
+    for (int channel = 0; channel < c; ++channel) {
+        for (int y = 0; y < h; ++y) {
+            for (int x = 0; x < w; ++x) {
+                unsigned char value = static_cast<unsigned char> (img(x, y, channel));
+                *o++ = value;
+            }
+        }
+    }
+
+    bool ok = (io_png_write_u8(fileName, out, w, h, c) == 0);
+
+    delete[] out;
+    return ok;
+}
+
 
 int Image::getPatchIndexFromCoordinates(int x, int y, int patchSize) const {
     int width = this->width();
@@ -220,4 +254,39 @@ int Image::getPatchIndexFromCoordinates(int x, int y, int patchSize) const {
 
     delete[] centers;
     return -1; // Pixel not found in any patch
+}
+
+void Image::initializeToBool(){
+    assert(channels()==1);
+    for (int y=0;y<height();y++){
+        for (int x=0;x<width();x++){
+            (*this)(y,x)=0.0f;
+        }
+    }
+}
+
+
+void Image::getPatchesOverMask(Image &boolImage, const Image &imageMask, int patchsize) {
+    int width = imageMask.width();
+    int height = imageMask.height();
+
+    int numberUniquePatchWidth = (2 * width) / patchsize - 1;
+    int numberUniquePatchHeight = (2 * height) / patchsize - 1;
+
+    // Il existe surement des manières plus rapide de faire ça, notamment en ajoutant pour un pixels les 4 patchs associés
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (imageMask(x, y) >128) {
+                int patchX = (2 * x) / patchsize;
+                int patchY = (2 * y) / patchsize;
+
+
+                if (patchX < numberUniquePatchWidth && patchY < numberUniquePatchHeight) {
+                    boolImage(patchX, patchY) = 255;
+                }
+
+                x += patchsize / 2;
+            }
+        }
+    }
 }

@@ -1,3 +1,5 @@
 # Ignorer les fichiers de build
 build*/
 dist/
+stereo-adaptive-weights_1.4/build*/
+stereo-adaptive-weights_1.4/CMakeLists.txt.user

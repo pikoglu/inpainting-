@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.10.0, 2024-06-20T13:32:18. -->
+<!-- Written by QtCreator 4.10.0, 2024-06-21T10:11:18. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -445,9 +445,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">stereoAdaptiveWeights</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration./Users/felixfourreau/Desktop/projet_vacances/stereo-adaptive-weights_1.4///::///stereoAdaptiveWeights</value>
-    <value type="QString" key="RunConfiguration.Arguments">&quot;/Users/felixfourreau/Desktop/projet_vacances/images/ppd.png&quot;
-
-</value>
+    <value type="QString" key="RunConfiguration.Arguments">&quot;/Users/felixfourreau/Desktop/projet_vacances/images/baseball/baseball.png&quot; &quot;/Users/felixfourreau/Desktop/projet_vacances/images/baseball/mask_baseball.png&quot;</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

@@ -62,7 +62,100 @@ void printCenters(const std::vector<std::pair<int, int> >& centers) {
 
 /// Main program
 int main(int argc, char *argv[]) {
-    std::cout<<"bonjour"<<std::endl;
+
+    if (argc!=3 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
+        std::cout<<argc<<std::endl;
+        std::cout<<"Une seule image demandée"<<std::endl;
+        return 0; //here we only want one picture --> test
+    }
+
+    Image im1 = loadImage(argv[1]);
+
+    const int width=im1.width();
+    const int height=im1.height();
+
+    int patchsize=5;
+
+
+
+    //partie mask
+    int numberUniquePatchWidth =(2*width)/patchsize -1;//théoriquement pas besoin de repasser en float
+    int numberUniquePatchHeight =(2*height)/patchsize -1;
+    Image UniquePatch(numberUniquePatchWidth,numberUniquePatchHeight);
+    UniquePatch.initializeToBool();
+
+
+
+
+
+
+
+
+
+
+
+
+    int* centers=im1.listPatchCenters(patchsize);
+    std::cout<<(centers[1])<<std::endl;
+
+    int index_xp1=10;
+    int index_xp2=11;
+
+    int xp1=centers[2*index_xp1];
+    int yp1=centers[2*index_xp1+1];
+    int xp2=centers[2*index_xp2];
+    int yp2=centers[2*index_xp2+1];
+
+
+
+    int ip=im1.getPatchIndexFromCoordinates(200,200,patchsize);
+    Image ssdImage = im1.createSSDImage(patchsize,ip);
+
+
+    /*
+    // Utile pour enregistrer l'image
+    if(! save_image(argv[2], ssdImage)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+    */
+
+    ip=im1.getPatchIndexFromCoordinates(50,50,patchsize);
+    ssdImage = im1.createSSDImage(patchsize,ip);
+    /*
+    // Utile pour enregistrer l'image
+    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd2.png", ssdImage)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }*/
+
+    /*
+    if(width!=im2.width() || height!=im2.height()) {
+        std::cerr << "The images must have the same size!" << std::endl;
+        return 1;
+    }
+    */
+
+    /*
+    // Utile pour enregistrer les valeurs de paramêtre (à conserver)
+    int dMin, dMax;
+    if(! ((std::istringstream(argv[3])>>dMin).eof() &&
+          (std::istringstream(argv[4])>>dMax).eof())) {
+            std::cerr << "Error reading dMin or dMax" << std::endl;
+            return 1;
+    */
+
+
+
+    /*
+    // Utile pour enregistrer l'image
+    if(! save_disparity("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd.png", ssdImage, 0, 255)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+    */
+
+
     /*
     int sense=0; // Camera motion direction: '0'=to-right, '1'=to-left
     CmdLine cmd;
@@ -122,82 +215,6 @@ int main(int argc, char *argv[]) {
     if(!paramD.check() || !paramOcc.check())
         return 1;
     */
-
-    if (argc!=2 ){
-        std::cout<<argc<<std::endl;
-        std::cout<<argv[0]<<std::endl;
-        std::cout<<"Une seule image demandée"<<std::endl;
-        return 0; //here we only want one picture --> test
-    }
-
-    int patchsize=30;
-
-    Image im1 = loadImage(argv[1]);
-
-
-    const int width=im1.width();
-
-    int* centers=im1.listPatchCenters(patchsize);
-    std::cout<<(centers[1])<<std::endl;
-
-    int index_xp1=10;
-    int index_xp2=11;
-
-    int xp1=centers[2*index_xp1];
-    int yp1=centers[2*index_xp1+1];
-    int xp2=centers[2*index_xp2];
-    int yp2=centers[2*index_xp2+1];
-
-
-
-    int ip=im1.getPatchIndexFromCoordinates(200,200,patchsize);
-    Image ssdImage = im1.createSSDImage(patchsize,ip);
-
-
-
-    // Utile pour enregistrer l'image
-    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd1.png", ssdImage)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-    ip=im1.getPatchIndexFromCoordinates(50,50,patchsize);
-    ssdImage = im1.createSSDImage(patchsize,ip);
-
-    // Utile pour enregistrer l'image
-    if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd2.png", ssdImage)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-    /*
-    if(width!=im2.width() || height!=im2.height()) {
-        std::cerr << "The images must have the same size!" << std::endl;
-        return 1;
-    }
-    */
-
-    /*
-    // Utile pour enregistrer les valeurs de paramêtre (à conserver)
-    int dMin, dMax;
-    if(! ((std::istringstream(argv[3])>>dMin).eof() &&
-          (std::istringstream(argv[4])>>dMax).eof())) {
-            std::cerr << "Error reading dMin or dMax" << std::endl;
-            return 1;
-    */
-
-
-
-    /*
-    // Utile pour enregistrer l'image
-    if(! save_disparity("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd.png", ssdImage, 0, 255)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-    */
-
-
-
 
     return 0;
 }
