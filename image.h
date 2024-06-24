@@ -19,6 +19,7 @@
 #define IMAGE_H
 
 #include <vector>
+#include "node.h"
 
 /// Float image class, with shallow copy for performance.
 ///
@@ -56,9 +57,12 @@ public:
     Image patchVisualization(int patchSize)const;
     int getPatchIndexFromCoordinates(int x, int y, int patchSize) const ;
     void initializeToBool();
-    void listNodesOverMask( Image& imagemask,  int patchsize) const;
+    std::vector<Node> nodesOverMask( int patchsize) const;
     Image extendMask(int patchsize) const;
     void displayNodesOverMask(int* listNodes, int patchSize);
+    void visualiseNodesAndVertices(std::vector<Node> v,int patchsize) ;
+    bool isPatchInsideMask(int xp,int yp , int patchSize);
+    void assignPriority(std::vector<Node> nodes,int patchSize);
     //
 
 

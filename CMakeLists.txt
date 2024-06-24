@@ -29,6 +29,7 @@ set(SRC
     cmdLine.h
     image.cpp image.h
     io_png.c io_png.h
+    node.cpp node.h
     main.cpp)
 
 

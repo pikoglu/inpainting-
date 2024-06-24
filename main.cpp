@@ -60,14 +60,15 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=11;
+    int patchsize=5;
 
     Image imageInput = loadImage(argv[1]);
     Image imageMask =loadImage(argv[2]);
 
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
-    imageExtendedMask.listNodesOverMask(imageMask,patchsize);
+    std::vector<Node> v=imageExtendedMask.nodesOverMask(patchsize);
+    imageMask.visualiseNodesAndVertices(v,patchsize);
 
 
     // Utile pour enregistrer l'image
@@ -76,6 +77,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
+
+
 
 
 

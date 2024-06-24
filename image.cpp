@@ -247,7 +247,7 @@ void Image::initializeToBool(){
 
 
 
-Image Image::extendMask(int patchsize)const {
+Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
     assert(channels() == 1);
     int width = this->width();
     int height = this->height();
@@ -261,14 +261,14 @@ Image Image::extendMask(int patchsize)const {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             if ((*this)(x, y) > 128) {
-                for (int i = std::max(0, x - patchsize+1); i < x; ++i) {
+                for (int i = std::max(0, x - patchsize/2); i < x; ++i) {
                     extendedMask(i, y) = 255;
                 }
                 x++;
                 while(x<width && (*this)(x, y) > 128){x++;}
 
                 if (x<width){
-                    for (int i = std::min(width-1, x + patchsize-1); i >= x; --i) {//attention x n'est pas dans le masque
+                    for (int i = std::min(width-1, x + patchsize/2); i >= x; --i) {//attention x n'est pas dans le masque
                         extendedMask(i, y) = 255;
                     }
                 }
@@ -282,14 +282,14 @@ Image Image::extendMask(int patchsize)const {
     for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 if ((extendedMaskTemp)(x, y) > 128) {
-                    for (int i = std::max(0, y - patchsize + 1); i < y; ++i) {
+                    for (int i = std::max(0, y - patchsize/2 ); i < y; ++i) {
                         extendedMask(x, i) = 255;}
                     y++;
                     while (y < height && (extendedMaskTemp)(x, y) > 128) {
                         y++;
                     }
                     if (y < height) {
-                        for (int i = y; i < std::min(height, y + patchsize - 1); ++i) {
+                        for (int i = y; i < std::min(height, y + patchsize/2); ++i) {
                             extendedMask(x, i) = 255;
                     }
                 }
@@ -302,19 +302,19 @@ Image Image::extendMask(int patchsize)const {
 }
 
 
-void Image::listNodesOverMask( Image& imagemask,  int patchsize) const{
+std::vector<Node> Image::nodesOverMask(int patchsize) const{
 
 
-    //Ne fonctionne que dans le cas impaire pour l'instant
-
+    //Ne fonctionne que dans le cas impaire
+    std::vector<Node> v;
+    int index=0;
 
     int numberUniquePatchWidth = (width()-patchsize)/((patchsize-1)/2)+1;
     int numberUniquePatchHeight = (height()-patchsize)/((patchsize-1)/2)+1;
 
     int* listNodes=new int[2*numberUniquePatchWidth*numberUniquePatchHeight];
-
     int halfPatchSize = patchsize / 2;
-    int index=0;
+
     for (int y=patchsize/2+1;y<height()-patchsize/2;y+=patchsize/2){
         for (int x=patchsize/2+1;x<width()-patchsize/2;x+=patchsize/2){//attention aux nombres paires
 
@@ -322,25 +322,40 @@ void Image::listNodesOverMask( Image& imagemask,  int patchsize) const{
 
              if ((*this)(x,y)>128){
 
-                 (imagemask)(x,y,0)=255;
-                 (imagemask)(x,y,1)=0;
-                 (imagemask)(x,y,2)=0;
+                Node n(index,x,y);
+                v.push_back(n);
+
+                //is there an already existing neighbors at the left ???
+
+                if (1<v.size()){
+                    if (v[v.size()-2].getx()==x-patchsize/2 && v[v.size()-2].gety()==y){
+                        v.back().addLeftNeighbor(v.size()-2);
+                        v[v.size()-2].addRightNeighbor(v.size()-1);
 
 
+                    }
+                }
+                //is there an already existing neighbors at the top ???
 
+                for (size_t i=0; i<v.size();i++){
+                    if (v[i].getx()==x && v[i].gety()==y-patchsize/2){
+                        if (y==39){std::cout<<"attention"<<std::endl;}
+                        v.back().addTopNeighbor(i);
+                        v[i].addBottomNeighbor(v.size()-1);
+                        break;
 
-
+                    }
+                }
              }
          }
-
     }
+    return  v;
 }
 
 
 
 void Image::displayNodesOverMask(int* listNodes, int patchSize){
     std::cout<<channels()<<std::endl;
-    std::cout<<"caca"<<std::endl;
     int numberUniquePatchWidth = (2 * width()) / patchSize - 1;
     int numberUniquePatchHeight = (2 * height()) / patchSize - 1;
 
@@ -360,3 +375,65 @@ void Image::displayNodesOverMask(int* listNodes, int patchSize){
     }
 }
 
+
+void Image::visualiseNodesAndVertices(std::vector<Node> v,int patchsize) {
+
+
+    for (size_t i=0; i<v.size();i++){
+        Node n=v[i];
+        //std::cout<<n.getx()<<" "<<n.gety()<<std::endl;
+        (*this)(n.getx(),n.gety(),0)=255;
+        (*this)(n.getx(),n.gety(),1)=0;
+        (*this)(n.getx(),n.gety(),2)=0;
+
+
+
+        if ( n.getTopNeighbor()!=-1){
+            for (int j=1;j<patchsize/2;j++){
+                (*this)(n.getx(),n.gety()-j,1)=255;
+                (*this)(n.getx(),n.gety()-j,0)=0;
+                (*this)(n.getx(),n.gety()-j,2)=0;
+            }
+        }
+
+
+
+        // Visualize bottom neighbor vertices as green
+        if (n.getBottomNeighbor() != -1) {
+            for (int j = 1; j < patchsize / 2; j++) {
+                (*this)(n.getx() , n.gety()+j, 0) = 0;
+                (*this)(n.getx() , n.gety()+j, 1) = 255;
+                (*this)(n.getx() , n.gety()+j, 2) = 0;
+            }
+        }
+
+        // Visualize left neighbor vertices as green
+        if (n.getLeftNeighbor() != -1) {
+            for (int j = 1; j < patchsize / 2; j++) {
+                (*this)(n.getx()- j, n.gety() , 0) = 0;
+                (*this)(n.getx()- j, n.gety() , 1) = 255;
+                (*this)(n.getx()- j, n.gety() , 2) = 0;
+            }
+        }
+        // Visualize right neighbor vertices as green
+        if (n.getRightNeighbor() != -1) {
+            for (int j = 1; j < patchsize / 2; j++) {
+                (*this)(n.getx()+ j, n.gety() , 0) = 0;
+                (*this)(n.getx()+ j, n.gety() , 1) = 255;
+                (*this)(n.getx()+ j, n.gety(), 2) = 0;
+            }
+        }
+    }
+}
+
+bool Image::isPatchInsideMask(int xp,int yp , int patchSize){
+    //to be called on mask
+    for (int x=xp-patchSize/2;x<=xp+patchSize/2;x++){
+        for (int y=yp-patchSize/2;y<=yp+patchSize/2;x++){
+            if ((*this)(x,y)<128){return false;} //black pixels ==> patch not entirely inside mask
+        }
+    }
+    return true;
+
+
+}
