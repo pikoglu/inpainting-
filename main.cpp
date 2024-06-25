@@ -68,16 +68,51 @@ int main(int argc, char *argv[]) {
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
     std::vector<Node> v=imageExtendedMask.nodesOverMask(patchsize);
+
+    int Lmin=3;
+    int Lmax=20;
+    int thresholdConfusion =patchsize*patchsize*100*100;
+    int thresholdSimilarity=patchsize*patchsize*10*10*3;
+
+    std::vector<ConfusionSet> priorities=imageInput.assignInitialPriority(
+                v,imageExtendedMask,imageMask,patchsize,Lmin,Lmax,thresholdConfusion,thresholdSimilarity);
+
+    int pruned=0;
+    int non_pruned=0;
+
+    for (size_t i=0;i<priorities.size();i++){
+        if (priorities[i].size()<20 && priorities[i].size()>1){pruned++;}
+        if (priorities[i].size()>Lmin){non_pruned++;}
+    }
+
+    std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
+
+    for (size_t i=0;i<v.size();i++){
+        int x=v[i].getx();
+        int y=v[i].gety();
+        int size=priorities[i].size();
+        for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
+            for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
+                imageInput(xp,yp,0)=255/Lmax*size;
+                imageInput(xp,yp,1)=0;
+                imageInput(xp,yp,2)=0;
+            }
+        }
+
+    }
     imageMask.visualiseNodesAndVertices(v,patchsize);
 
-
     // Utile pour enregistrer l'image
-    std::cout<<"ccc"<<std::endl;
     if(! save_image(argv[3], imageMask)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
 
+
+    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/confusion_set.png" , imageInput)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
 
 

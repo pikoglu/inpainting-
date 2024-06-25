@@ -20,6 +20,9 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <queue>
+
+
 /// Constructor
 ///
 /// The main interest of this one is to allow arrays of Image.
@@ -105,15 +108,16 @@ int* Image::listPatchCenters(int patchSize) const {
     return centers;
 }
 
-int Image::ssd(int xp1, int yp1, int xp2, int yp2, int patch_size) const{
+int Image::ssd(int xp1, int yp1, int xp2, int yp2, Image const &mask,int patch_size) const{
     int half_patch = patch_size / 2;
     int sum = 0;
 
     for (int y = -half_patch; y <= half_patch; y++) {
         for (int x = -half_patch; x <= half_patch; x++) {
             for (int channel = 0; channel < c; channel++) {
-                int diff = (*this)(xp1 + x, yp1 + y, channel) - (*this)(xp2 + x, yp2 + y, channel);
-                sum += diff * diff;
+                if (mask(xp1 + x,yp1 + y)<128){
+                    int diff = (*this)(xp1 + x, yp1 + y, channel) - (*this)(xp2 + x, yp2 + y, channel);
+                    sum += diff * diff;}
             }
         }
     }
@@ -139,7 +143,7 @@ Image Image::createSSDImage(int patchSize, int ip) const {
     for (int j = 0; j < numpatchs; ++j) {
         int x2 = centers[2 * j];
         int y2 = centers[2 * j + 1];
-        int ssd_patch = this->ssd(xp, yp, x2, y2, patchSize);
+        int ssd_patch = this->ssd(xp, yp, x2, y2, (*this),patchSize);
         ssdMax = std::max(ssdMax, static_cast<float>(ssd_patch)); //Attention il est sans doute nécessaire de
     }
 
@@ -147,7 +151,7 @@ Image Image::createSSDImage(int patchSize, int ip) const {
     for (int j = 0; j < numpatchs; ++j) {
         int x2 = centers[2 * j];
         int y2 = centers[2 * j + 1];
-        int ssd_patch = this->ssd(xp, yp, x2, y2, patchSize);
+        int ssd_patch = this->ssd(xp, yp, x2, y2,(*this), patchSize);
         float ssdNormalized = static_cast<float>(ssd_patch) / ssdMax;
         if (xp==x2 and yp==y2){
             grayImage(x2, y2) = 255;
@@ -426,10 +430,10 @@ void Image::visualiseNodesAndVertices(std::vector<Node> v,int patchsize) {
     }
 }
 
-bool Image::isPatchInsideMask(int xp,int yp , int patchSize){
+bool Image::isPatchInsideMask(int xp,int yp , int patchSize) const{
     //to be called on mask
     for (int x=xp-patchSize/2;x<=xp+patchSize/2;x++){
-        for (int y=yp-patchSize/2;y<=yp+patchSize/2;x++){
+        for (int y=yp-patchSize/2;y<=yp+patchSize/2;y++){
             if ((*this)(x,y)<128){return false;} //black pixels ==> patch not entirely inside mask
         }
     }
@@ -437,3 +441,198 @@ bool Image::isPatchInsideMask(int xp,int yp , int patchSize){
 
 
 }
+
+//ajouter tyedef point pour std::pair<int,int>
+//définir d'autre typedef
+//soigner le code
+
+bool compareBeliefByPotential(const Belief& a, const Belief& b) { //pour trier ConfusionSet par potentiel croissant
+    return a.second < b.second;
+}
+
+std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,const Image& mask,
+                                                       int patchSize, int Lmin, int Lmax,
+                                                       int thresholdConfusion, int thresholdSimilarity)const{
+    std::vector<ConfusionSet > confusionSets;
+    confusionSets.reserve(nodes.size());//size is known
+
+    int progression=0;
+
+    // Iterate over each node
+    for (size_t i=0;i<nodes.size();i++) {if (i/100>progression){progression=i/100;std::cout<<progression*100<<"/"<<nodes.size()<<std::endl;}
+
+        int nodeX = nodes[i].getx();
+        int nodeY = nodes[i].gety();
+
+
+        // If patch is entirely inside the mask the initial discimination is impossible therefore we let the confusion set empty (<==> confusion sets are all the labels)
+        if (mask.isPatchInsideMask(nodeX,nodeY,patchSize)) {//optimisation possible since
+            ConfusionSet nodeConfusionSet;//empty
+            confusionSets.push_back(nodeConfusionSet);
+            continue;
+        }
+
+        // Compute SSD with each label patch in maskExtended
+        ConfusionSet nodeConfusionSet;
+
+        for (int x=patchSize/2;x<maskExtended.width()-patchSize/2;x++) {
+            for (int y=patchSize/2;y<maskExtended.height()-patchSize/2;y++){
+                if (maskExtended(x,y)<128){ //black pixel ==> possible label candidate
+                    int potential=ssd(nodeX,nodeY,x,y,mask,patchSize);
+
+                    //If there is not enough labels already to begin discrimination
+                    if (nodeConfusionSet.size()<Lmin){ //if the minimum hasn't been met
+                        Point coordinateLabel(x,y);
+                        Belief initialBelief(coordinateLabel,potential);
+                        nodeConfusionSet.push_back(initialBelief);
+                        if (nodeConfusionSet.size()==Lmin){
+                            std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),compareBeliefByPotential); //sorted increasing order
+                        }
+                        continue;
+
+                    }
+
+                    //If the size condition is met we start to discriminate the patches
+                    //if (potential<thresholdConfusion){
+                    if (nodeConfusionSet.size()<Lmax or potential<nodeConfusionSet.front().first.second){ //suppose is is sorted
+
+                        //Does this patch respect the patch similarity condition
+                        bool breaked=false;
+                        for (size_t i=0;i<nodeConfusionSet.size();i++){
+                            Point coordinate=nodeConfusionSet[i].first;
+                            int xLabel=coordinate.first;
+                            int yLabel=coordinate.second;
+                            int ssdDistance= ssd(x,y,xLabel,yLabel,mask,patchSize);
+                            if (ssdDistance<thresholdSimilarity) {//no need to normalize since patch are full
+                                breaked=true;
+                                break; // we found one to similar no add
+
+                            }
+                        }
+
+                        //Is it hasn't break it should be added and inserted in the good position to conserve sort
+                        if (not breaked){
+                            for (size_t j=1;j<nodeConfusionSet.size();j++){
+                                //we insert the new label
+                                if (nodeConfusionSet.size()==Lmax){
+                                    nodeConfusionSet.pop_back();
+                                }
+                                if (potential>=nodeConfusionSet[j].first.second){
+                                    Point newCoordonates(x,y);
+                                    Belief newNode(newCoordonates,potential);
+                                    nodeConfusionSet.insert(nodeConfusionSet.begin()+j,newNode);
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+        if (nodeConfusionSet.size() > Lmin) {
+            std::vector<Belief>::iterator it = std::lower_bound(nodeConfusionSet.begin(), nodeConfusionSet.end(),
+                                       Belief(Point(0,0), thresholdConfusion-nodeConfusionSet[0].second),
+                                       compareBeliefByPotential);
+
+
+
+
+            // Keep at least
+            if (std::distance(nodeConfusionSet.begin(), it) < Lmin) {
+                it = nodeConfusionSet.begin() + Lmin;
+            }
+
+            while (nodeConfusionSet.size() > std::distance(nodeConfusionSet.begin(), it)) {
+                nodeConfusionSet.pop_back();
+            }
+
+        }
+
+        confusionSets.push_back(nodeConfusionSet);
+
+
+    }
+
+
+
+    return confusionSets;
+}
+
+
+/*
+std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,
+                                                       int patchSize, int Lmin, int Lmax,
+                                                       int thresholdConfusion, int thresholdSimilarity)const {
+    std::vector<ConfusionSet> confusionSets;
+    confusionSets.reserve(nodes.size());
+
+    for (size_t i=0;i<nodes.size();i++) {
+        std::cout<<i<<"/"<<nodes.size()<<std::endl;
+        int nodeX = nodes[i].getx();
+        int nodeY = nodes[i].gety();
+
+        if (maskExtended.isPatchInsideMask(nodeX, nodeY, patchSize)) {
+            continue;
+        }
+
+
+        std::priority_queue<Belief, std::vector<Belief>, std::greater<Belief> > nodeConfusionSet;
+
+        for (int x = patchSize/2; x < maskExtended.width() - patchSize/2; ++x) {
+            for (int y = patchSize/2; y < maskExtended.height() - patchSize/2; ++y) {
+                if (maskExtended(x, y) >= 128) continue; // Skip non-black pixels
+
+                int potential = ssd(nodeX, nodeY, x, y, patchSize);
+
+                if (nodeConfusionSet.size() < Lmin) {
+                    nodeConfusionSet.push(Belief(Point(x, y), potential));
+                    continue;
+                }
+
+                if (potential < thresholdConfusion &&
+                    (nodeConfusionSet.size() < Lmax || potential < nodeConfusionSet.top().second)) {
+
+                    bool isSimilar = false;
+                    std::vector<Belief> temp;
+                    temp.reserve(nodeConfusionSet.size());
+
+                    while (!nodeConfusionSet.empty()) {
+                        const auto& [coord, _] = nodeConfusionSet.top();
+                        int ssdDistance = ssd(x, y, coord.first, coord.second, patchSize);
+                        if (ssdDistance < thresholdSimilarity) {
+                            isSimilar = true;
+                            break;
+                        }
+                        temp.push_back(nodeConfusionSet.top());
+                        nodeConfusionSet.pop();
+                    }
+
+                    if (!isSimilar) {
+                        nodeConfusionSet.push(Belief(Point(x, y), potential));
+                        if (nodeConfusionSet.size() > Lmax) {
+                            nodeConfusionSet.pop();
+                        }
+                    }
+
+                    for (const auto& item : temp) {
+                        nodeConfusionSet.push(item);
+                    }
+                }
+            }
+        }
+
+        ConfusionSet finalSet;
+        finalSet.reserve(nodeConfusionSet.size());
+        while (!nodeConfusionSet.empty()) {
+            finalSet.push_back(nodeConfusionSet.top());
+            nodeConfusionSet.pop();
+        }
+
+        confusionSets.push_back(std::move(finalSet));
+    }
+
+    return confusionSets;
+}*/

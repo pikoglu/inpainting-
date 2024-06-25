@@ -12,8 +12,8 @@ class Node{
 public:
     Node(int index,int xp,int yp);
 
-    int gety(){return y;}
-    int getx(){return x;}
+    int gety() const {return y;}
+    int getx() const {return x;}
 
     void addLeftNeighbor(int i){leftNeighbor=i;}
     void addRightNeighbor(int i){rightNeighbor=i;}
