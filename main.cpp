@@ -98,8 +98,8 @@ int main(int argc, char *argv[]) {
                             imageInput(xp,yp,2)=0;}
                 else{
                 imageInput(xp,yp,0)=255/Lmax*size;
-                imageInput(xp,yp,1)=0;
-                imageInput(xp,yp,2)=0;}
+                imageInput(xp,yp,1)=255;
+                imageInput(xp,yp,2)=255;}
             }
         }
 
