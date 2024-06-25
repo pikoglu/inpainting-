@@ -1,4 +1,11 @@
 #include <vector>
+#include <array>
+
+
+typedef std::array<int, 5> Messages;
+typedef std::pair<int, int> Point;
+typedef std::pair<Point, Messages> Belief;
+typedef std::vector<Belief> ConfusionSet;
 
 class Node{
     int index;
@@ -24,4 +31,8 @@ public:
     int getRightNeighbor(){return rightNeighbor;}
     int getTopNeighbor(){return topNeighbor;}
     int getBottomNeighbor(){return bottomNeighbor;}
+
+
 };
+
+void forwardpass(std::vector<ConfusionSet> &confusionSets,std::vector<Node> const &Nodes );

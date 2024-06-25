@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=5;
+    int patchsize=31;
 
     Image imageInput = loadImage(argv[1]);
     Image imageMask =loadImage(argv[2]);
@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
     int thresholdConfusion =patchsize*patchsize*100*100;
     int thresholdSimilarity=patchsize*patchsize*10*10*3;
 
+    /*
     std::vector<ConfusionSet> priorities=imageInput.assignInitialPriority(
                 v,imageExtendedMask,imageMask,patchsize,Lmin,Lmax,thresholdConfusion,thresholdSimilarity);
 
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-    }
+    }*/
     imageMask.visualiseNodesAndVertices(v,patchsize);
 
     // Utile pour enregistrer l'image

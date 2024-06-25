@@ -20,11 +20,13 @@
 
 #include <vector>
 #include "node.h"
+#include <array>
 
 
+typedef std::array<int, 5> Messages;
 typedef std::pair<int, int> Point;
-typedef std::pair<Point, int>  Belief;
-typedef std::vector<Belief > ConfusionSet;
+typedef std::pair<Point, Messages> Belief;
+typedef std::vector<Belief> ConfusionSet;
 
 /// Float image class, with shallow copy for performance.
 ///
