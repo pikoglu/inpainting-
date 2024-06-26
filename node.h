@@ -2,22 +2,35 @@
 #include <array>
 
 
-typedef std::array<int, 5> Messages;
 typedef std::pair<int, int> Point;
-typedef std::pair<Point, Messages> Belief;
-typedef std::vector<Belief> ConfusionSet;
+
+struct Label {
+    Point point;
+    int potential;
+    int messageFromLeft;
+    int messageFromRight;
+    int messageFromTop;
+    int messageFromBottom;
+    int belief;
+};
+
+
 
 class Node{
     int index;
+
     int x;
     int y;
+
     int leftNeighbor;
     int topNeighbor;
     int rightNeighbor;
     int bottomNeighbor;
-    std::vector<int> messages[4];
+
+    std::vector<Label> nodeConfusionSet; // this isnt entirely equal to the definition of condusionSet in the paper
+
 public:
-    Node(int index,int xp,int yp);
+    Node(int index,int xp,int yp, int Lmax);
 
     int gety() const {return y;}
     int getx() const {return x;}
@@ -33,6 +46,12 @@ public:
     int getBottomNeighbor(){return bottomNeighbor;}
 
 
+
+
+
+
+
 };
 
-void forwardpass(std::vector<ConfusionSet> &confusionSets,std::vector<Node> const &Nodes );
+
+

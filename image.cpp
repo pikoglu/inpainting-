@@ -326,7 +326,7 @@ std::vector<Node> Image::nodesOverMask(int patchsize) const{
 
              if ((*this)(x,y)>128){
 
-                Node n(index,x,y);
+                Node n(index,x,y,20);
                 v.push_back(n);
 
                 //is there an already existing neighbors at the left ???
@@ -447,12 +447,30 @@ bool Image::isPatchInsideMask(int xp,int yp , int patchSize) const{
 //soigner le code
 
 bool compareBeliefByPotential(const Belief& a, const Belief& b) { //pour trier ConfusionSet par potentiel croissant
-    return a.second < b.second;
+
+    int beliefa=0;
+    int beliefb=0;
+
+    for (int i=0;i<5;i++){
+        beliefa+=a.second[i];
+        beliefb+=b.second[i];
+    }
+    return beliefa < beliefb;
 }
 
+
+void printVector(ConfusionSet const nodeConfusionSet){
+    std::cout<<"debut"<<std::endl;
+    for (size_t i=0;i<nodeConfusionSet.size();i++){
+        std::cout<<nodeConfusionSet[i].second[0]<<std::endl;
+    }
+    std::cout<<"fin"<<std::endl;
+
+}
 std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,const Image& mask,
                                                        int patchSize, int Lmin, int Lmax,
                                                        int thresholdConfusion, int thresholdSimilarity)const{
+
     std::vector<ConfusionSet > confusionSets;
     confusionSets.reserve(nodes.size());//size is known
 
@@ -460,6 +478,7 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
 
     // Iterate over each node
     for (size_t i=0;i<nodes.size();i++) {
+
 
         if (i/100>progression){progression=i/100;std::cout<<progression*100<<"/"<<nodes.size()<<std::endl;}
 
@@ -483,10 +502,11 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
 
         for (int x=patchSize/2;x<maskExtended.width()-patchSize/2;x++) {
             for (int y=patchSize/2;y<maskExtended.height()-patchSize/2;y++){
+
                 if (maskExtended(x,y)<128){ //black pixel ==> possible label candidate
                     int potential=ssd(nodeX,nodeY,x,y,mask,patchSize);
 
-                    //If there is not enough labels already to begin discrimination
+                    //If there is not enough labels
                     if (nodeConfusionSet.size()<Lmin){ //if the minimum hasn't been met
                         Point coordinateLabel(x,y);
                         Messages messages={potential,0,0,0,0};
@@ -503,6 +523,8 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
                     //if (potential<thresholdConfusion){
                     if (nodeConfusionSet.size()<Lmax or potential<nodeConfusionSet.back().second[0]){ //suppose is is sorted
 
+
+
                         //Does this patch respect the patch similarity condition
                         bool breaked=false;
                         for (size_t i=0;i<nodeConfusionSet.size();i++){
@@ -510,6 +532,7 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
                             int xLabel=coordinate.first;
                             int yLabel=coordinate.second;
                             int ssdDistance= ssd(x,y,xLabel,yLabel,mask,patchSize);
+
                             if (ssdDistance<thresholdSimilarity) {//no need to normalize since patch are full
                                 breaked=true;
                                 break; // we found one to similar no add
@@ -517,22 +540,65 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
                             }
                         }
 
+
                         //Is it hasn't break it should be added and inserted in the good position to conserve sort
+
                         if (not breaked){
-                            for (size_t j=nodeConfusionSet.size()-1;j>=0;j--){
-                                //we insert the new label
-                                if (nodeConfusionSet.size()==Lmax){
-                                    nodeConfusionSet.pop_back();
+
+                            if (nodeConfusionSet.size()==Lmax){
+                                nodeConfusionSet.pop_back();
+                            }
+
+                            if (nodeConfusionSet.back().second[0]<potential){
+                                Point newCoordonates(x,y);
+                                Messages messages={potential,0,0,0,0};
+                                Belief newNode(newCoordonates,messages);
+                                nodeConfusionSet.push_back(newNode);
+                                break;}
+
+
+                            else{
+                                //std::cout<<"a "<<nodeConfusionSet.size()-2<<std::endl;
+                                for (size_t k=nodeConfusionSet.size()-2;k>0;k--){
+
+                                    //we insert the new label
+                                    //std::cout<<"nodeConfusionSet.size()"<<std::endl;
+                                    //std::cout<<k<<std::endl;
+
+                                    if (potential>=nodeConfusionSet[k].second[0]){
+                                        Point newCoordonates(x,y);
+                                        Messages messages={potential,0,0,0,0};
+
+                                        Belief newNode(newCoordonates,messages);
+                                        //std::cout<<"n "<<nodeConfusionSet.size()<<std::endl;
+
+                                        nodeConfusionSet.insert(nodeConfusionSet.begin()+k+1,newNode);
+                                        breaked=true;
+                                        break;
+
+                                    }
+
+                                    //std::cout<<nodeConfusionSet.size()<<std::endl;
                                 }
-                                if (potential>=nodeConfusionSet[j].second[0]){
-                                    Point newCoordonates(x,y);
-                                    Messages messages={potential,0,0,0,0};
+                                if (not breaked){//meaning if no insert has been made <==> best potential
+                                    if (potential>=nodeConfusionSet[0].second[0]){
+                                        Point newCoordonates(x,y);
+                                        Messages messages={potential,0,0,0,0};
 
-                                    Belief newNode(newCoordonates,messages);
-                                    nodeConfusionSet.insert(nodeConfusionSet.begin()+j,newNode);
+                                        Belief newNode(newCoordonates,messages);
+                                        nodeConfusionSet.insert(nodeConfusionSet.begin()+1,newNode);
+                                    }
+                                    else{
+                                        Point newCoordonates(x,y);
+                                        Messages messages={potential,0,0,0,0};
 
+                                        Belief newNode(newCoordonates,messages);
+                                        nodeConfusionSet.insert(nodeConfusionSet.begin(),newNode);
+
+                                    }
                                 }
                             }
+
                         }
                     }
 
@@ -541,30 +607,38 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
             }
 
         }
+        //printVector(nodeConfusionSet);
+        //std::cout<<std::is_sorted(nodeConfusionSet.begin(),nodeConfusionSet.end(),compareBeliefByPotential)<<std::endl;
         if (nodeConfusionSet.size() > Lmin) {
-            Messages messages={nodeConfusionSet[0].second[0]-thresholdConfusion,0,0,0,0};
-            std::vector<Belief>::iterator it = std::lower_bound(nodeConfusionSet.begin(), nodeConfusionSet.end(),
-                                       Belief(Point(0,0), messages), //normalisation
-                                       compareBeliefByPotential);
+            bool breaked=false;
+            // Compute b_max from the sorted list
+            int b_max = -nodeConfusionSet[0].second[0];
 
-
-
-
-            // Keep at least Lmin
-            if (std::distance(nodeConfusionSet.begin(), it) < Lmin) {
-                it = nodeConfusionSet.begin() + Lmin;
+            size_t validIndex = 0;
+            for (size_t i = 0; i < nodeConfusionSet.size(); ++i) {
+                if (-nodeConfusionSet[i].second[0] - b_max < thresholdConfusion) {
+                    validIndex = i;
+                    breaked=true;
+                    break;
+                }
             }
 
-            while (nodeConfusionSet.size() > std::distance(nodeConfusionSet.begin(), it)) {
-                nodeConfusionSet.pop_back();
+            if (breaked){
+
+            if (validIndex < Lmin) {
+                validIndex = Lmin;
             }
+            while (nodeConfusionSet.size() > validIndex) {
+                   nodeConfusionSet.pop_back();
+            }}
 
         }
 
+
+
         confusionSets.push_back(nodeConfusionSet);
-
-
     }
+
 
 
 

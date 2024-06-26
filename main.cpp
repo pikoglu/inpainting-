@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=31;
+    int patchsize=17;
 
     Image imageInput = loadImage(argv[1]);
     Image imageMask =loadImage(argv[2]);
@@ -71,10 +71,10 @@ int main(int argc, char *argv[]) {
 
     int Lmin=3;
     int Lmax=20;
-    int thresholdConfusion =patchsize*patchsize*100*100;
+    int thresholdConfusion =-patchsize*patchsize*500;
     int thresholdSimilarity=patchsize*patchsize*10*10*3;
 
-    /*
+
     std::vector<ConfusionSet> priorities=imageInput.assignInitialPriority(
                 v,imageExtendedMask,imageMask,patchsize,Lmin,Lmax,thresholdConfusion,thresholdSimilarity);
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
     for (size_t i=0;i<priorities.size();i++){
         if (priorities[i].size()<20 && priorities[i].size()>1){pruned++;}
-        if (priorities[i].size()>Lmin){non_pruned++;}
+        if (priorities[i].size()>1){non_pruned++;}
     }
 
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
@@ -98,13 +98,13 @@ int main(int argc, char *argv[]) {
                             imageInput(xp,yp,1)=255;
                             imageInput(xp,yp,2)=0;}
                 else{
-                imageInput(xp,yp,0)=255/Lmax*size;
-                imageInput(xp,yp,1)=255;
-                imageInput(xp,yp,2)=255;}
+                imageInput(xp,yp,0)=255-255/Lmax*size;
+                imageInput(xp,yp,1)=0;
+                imageInput(xp,yp,2)=0;}
             }
         }
 
-    }*/
+    }
     imageMask.visualiseNodesAndVertices(v,patchsize);
 
     // Utile pour enregistrer l'image

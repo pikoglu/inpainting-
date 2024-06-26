@@ -72,24 +72,10 @@ public:
     std::vector<ConfusionSet> assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,const Image& mask,
                                                            int patchSize, int Lmin, int Lmax,
                                                            int thresholdConfusion, int thresholdSimilarity)const ;
-    //
 
 
-    // Filters (implemented in filters.cpp)
-    Image gradX() const;
-    void fillMinX(float vMin);
-    void fillMaxX(float vMin);
-    Image median(int radius) const;
-    Image weightedMedian(const Image& guidance,
-                         const Image& where, int vMin, int vMax,
-                         int radius,
-                         float sigmaSpace, float sigmaColor) const;
-private:
-    void fillX(float vMin, const float& (*cmp)(const float&,const float&));
-    float dist2(int x1,int y1, int x2,int y2) const;
-    void weighted_histo(std::vector<float>& tab, int x, int y, int radius,
-                        int vMin, const Image& guidance,
-                        float sSpace, float sColor) const;
+
+
 };
 
 bool save_disparity(const char* file_name, const Image& disparity,

@@ -30,7 +30,6 @@ set(SRC
     image.cpp image.h
     io_png.c io_png.h
     node.cpp node.h
-    message.cpp message.h
     main.cpp)
 
 
