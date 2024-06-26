@@ -19,7 +19,6 @@
 #define IMAGE_H
 
 #include <vector>
-#include "node.h"
 #include <array>
 
 
@@ -59,19 +58,20 @@ public:
     //Felix
     int distance(int xp1, int yp1, int xp2, int yp2, int patch_size) const;
     int* listPatchCenters(int patchSize) const;
-    int ssd(int xp1, int yp1, int xp2, int yp2, Image const &mask,int patch_size) const;
+    int ssdMask(Point point1, Point point2, Image const &mask,int patch_size) const;
+    int ssd(Point point1, Point point2,int patch_size) const;
+
     Image createSSDImage(int patchSize,int ip) const;
     Image patchVisualization(int patchSize)const;
     int getPatchIndexFromCoordinates(int x, int y, int patchSize) const ;
     void initializeToBool();
-    std::vector<Node> nodesOverMask( int patchsize) const;
+
     Image extendMask(int patchsize) const;
-    void displayNodesOverMask(int* listNodes, int patchSize);
-    void visualiseNodesAndVertices(std::vector<Node> v,int patchsize) ;
-    bool isPatchInsideMask(int xp,int yp , int patchSize) const;
-    std::vector<ConfusionSet> assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,const Image& mask,
-                                                           int patchSize, int Lmin, int Lmax,
-                                                           int thresholdConfusion, int thresholdSimilarity)const ;
+
+
+
+    bool isPatchInsideMask(Point patchPoint , int patchSize) const;
+
 
 
 

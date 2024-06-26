@@ -108,15 +108,15 @@ int* Image::listPatchCenters(int patchSize) const {
     return centers;
 }
 
-int Image::ssd(int xp1, int yp1, int xp2, int yp2, Image const &mask,int patch_size) const{
+int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size) const{
     int half_patch = patch_size / 2;
     int sum = 0;
 
     for (int y = -half_patch; y <= half_patch; y++) {
         for (int x = -half_patch; x <= half_patch; x++) {
             for (int channel = 0; channel < c; channel++) {
-                if (mask(xp1 + x,yp1 + y)<128){
-                    int diff = (*this)(xp1 + x, yp1 + y, channel) - (*this)(xp2 + x, yp2 + y, channel);
+                if (mask(point1.first + x,point1.second + y)<128){
+                    int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
                     sum += diff * diff;}
             }
         }
@@ -126,7 +126,23 @@ int Image::ssd(int xp1, int yp1, int xp2, int yp2, Image const &mask,int patch_s
 }
 
 
+int Image::ssd(Point point1, Point point2,int patch_size) const{
+    int half_patch = patch_size / 2;
+    int sum = 0;
 
+    for (int y = -half_patch; y <= half_patch; y++) {
+        for (int x = -half_patch; x <= half_patch; x++) {
+            for (int channel = 0; channel < c; channel++) {
+                int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
+                sum += diff * diff;}
+
+        }
+    }
+
+    return sum;
+}
+
+/*
 Image Image::createSSDImage(int patchSize, int ip) const {
     int width = this->width();
     int height = this->height();
@@ -164,7 +180,7 @@ Image Image::createSSDImage(int patchSize, int ip) const {
     delete[] centers;
 
     return grayImage;
-}
+}*/
 
 
 /*
@@ -306,134 +322,18 @@ Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
 }
 
 
-std::vector<Node> Image::nodesOverMask(int patchsize) const{
-
-
-    //Ne fonctionne que dans le cas impaire
-    std::vector<Node> v;
-    int index=0;
-
-    int numberUniquePatchWidth = (width()-patchsize)/((patchsize-1)/2)+1;
-    int numberUniquePatchHeight = (height()-patchsize)/((patchsize-1)/2)+1;
-
-    int* listNodes=new int[2*numberUniquePatchWidth*numberUniquePatchHeight];
-    int halfPatchSize = patchsize / 2;
-
-    for (int y=patchsize/2+1;y<height()-patchsize/2;y+=patchsize/2){
-        for (int x=patchsize/2+1;x<width()-patchsize/2;x+=patchsize/2){//attention aux nombres paires
 
 
 
-             if ((*this)(x,y)>128){
-
-                Node n(index,x,y,20);
-                v.push_back(n);
-
-                //is there an already existing neighbors at the left ???
-
-                if (1<v.size()){
-                    if (v[v.size()-2].getx()==x-patchsize/2 && v[v.size()-2].gety()==y){
-                        v.back().addLeftNeighbor(v.size()-2);
-                        v[v.size()-2].addRightNeighbor(v.size()-1);
-
-
-                    }
-                }
-                //is there an already existing neighbors at the top ???
-
-                for (size_t i=0; i<v.size();i++){
-                    if (v[i].getx()==x && v[i].gety()==y-patchsize/2){
-                        if (y==39){std::cout<<"attention"<<std::endl;}
-                        v.back().addTopNeighbor(i);
-                        v[i].addBottomNeighbor(v.size()-1);
-                        break;
-
-                    }
-                }
-             }
-         }
-    }
-    return  v;
-}
 
 
 
-void Image::displayNodesOverMask(int* listNodes, int patchSize){
-    std::cout<<channels()<<std::endl;
-    int numberUniquePatchWidth = (2 * width()) / patchSize - 1;
-    int numberUniquePatchHeight = (2 * height()) / patchSize - 1;
 
 
-    int x;
-    int y;
-
-    for (int index=0;index<numberUniquePatchWidth*numberUniquePatchHeight;index+=2){
-        x=listNodes[index];
-        y=listNodes[index+1];
-        std::cout<<index<<std::endl;
-        std::cout<<x<<std::endl;
-        std::cout<<y<<std::endl;
-        (*this)(x,y,0)=255;
-        (*this)(x,y,1)=0;
-        (*this)(x,y,2)=0;
-    }
-}
-
-
-void Image::visualiseNodesAndVertices(std::vector<Node> v,int patchsize) {
-
-
-    for (size_t i=0; i<v.size();i++){
-        Node n=v[i];
-        //std::cout<<n.getx()<<" "<<n.gety()<<std::endl;
-        (*this)(n.getx(),n.gety(),0)=255;
-        (*this)(n.getx(),n.gety(),1)=0;
-        (*this)(n.getx(),n.gety(),2)=0;
-
-
-
-        if ( n.getTopNeighbor()!=-1){
-            for (int j=1;j<patchsize/2;j++){
-                (*this)(n.getx(),n.gety()-j,1)=255;
-                (*this)(n.getx(),n.gety()-j,0)=0;
-                (*this)(n.getx(),n.gety()-j,2)=0;
-            }
-        }
-
-
-
-        // Visualize bottom neighbor vertices as green
-        if (n.getBottomNeighbor() != -1) {
-            for (int j = 1; j < patchsize / 2; j++) {
-                (*this)(n.getx() , n.gety()+j, 0) = 0;
-                (*this)(n.getx() , n.gety()+j, 1) = 255;
-                (*this)(n.getx() , n.gety()+j, 2) = 0;
-            }
-        }
-
-        // Visualize left neighbor vertices as green
-        if (n.getLeftNeighbor() != -1) {
-            for (int j = 1; j < patchsize / 2; j++) {
-                (*this)(n.getx()- j, n.gety() , 0) = 0;
-                (*this)(n.getx()- j, n.gety() , 1) = 255;
-                (*this)(n.getx()- j, n.gety() , 2) = 0;
-            }
-        }
-        // Visualize right neighbor vertices as green
-        if (n.getRightNeighbor() != -1) {
-            for (int j = 1; j < patchsize / 2; j++) {
-                (*this)(n.getx()+ j, n.gety() , 0) = 0;
-                (*this)(n.getx()+ j, n.gety() , 1) = 255;
-                (*this)(n.getx()+ j, n.gety(), 2) = 0;
-            }
-        }
-    }
-}
-
-bool Image::isPatchInsideMask(int xp,int yp , int patchSize) const{
+bool Image::isPatchInsideMask(Point patchPoint , int patchSize) const{
     //to be called on mask
-    for (int x=xp-patchSize/2;x<=xp+patchSize/2;x++){
-        for (int y=yp-patchSize/2;y<=yp+patchSize/2;y++){
+    for (int x=patchPoint.first-patchSize/2;x<=patchPoint.first+patchSize/2;x++){
+        for (int y=patchPoint.second-patchSize/2;y<=patchPoint.second+patchSize/2;y++){
             if ((*this)(x,y)<128){return false;} //black pixels ==> patch not entirely inside mask
         }
     }
@@ -467,183 +367,7 @@ void printVector(ConfusionSet const nodeConfusionSet){
     std::cout<<"fin"<<std::endl;
 
 }
-std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,const Image& mask,
-                                                       int patchSize, int Lmin, int Lmax,
-                                                       int thresholdConfusion, int thresholdSimilarity)const{
 
-    std::vector<ConfusionSet > confusionSets;
-    confusionSets.reserve(nodes.size());//size is known
-
-    int progression=0;
-
-    // Iterate over each node
-    for (size_t i=0;i<nodes.size();i++) {
-
-
-        if (i/100>progression){progression=i/100;std::cout<<progression*100<<"/"<<nodes.size()<<std::endl;}
-
-        int nodeX = nodes[i].getx();
-        int nodeY = nodes[i].gety();
-
-
-        // If patch is entirely inside the mask the initial discimination is impossible therefore we let the confusion set empty (<==> confusion sets are all the labels)
-        if (mask.isPatchInsideMask(nodeX,nodeY,patchSize)) {//optimisation possible since
-            ConfusionSet nodeConfusionSet;//empty
-            confusionSets.push_back(nodeConfusionSet);
-            continue;
-        }
-
-
-
-
-
-        // Compute SSD with each label patch in maskExtended
-        ConfusionSet nodeConfusionSet;
-
-        for (int x=patchSize/2;x<maskExtended.width()-patchSize/2;x++) {
-            for (int y=patchSize/2;y<maskExtended.height()-patchSize/2;y++){
-
-                if (maskExtended(x,y)<128){ //black pixel ==> possible label candidate
-                    int potential=ssd(nodeX,nodeY,x,y,mask,patchSize);
-
-                    //If there is not enough labels
-                    if (nodeConfusionSet.size()<Lmin){ //if the minimum hasn't been met
-                        Point coordinateLabel(x,y);
-                        Messages messages={potential,0,0,0,0};
-                        Belief initialBelief(coordinateLabel,messages);
-                        nodeConfusionSet.push_back(initialBelief);
-                        if (nodeConfusionSet.size()==Lmin){
-                            std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),compareBeliefByPotential); //sorted increasing order
-                        }
-                        continue;
-
-                    }
-
-                    //If the size condition is met we start to discriminate the patches
-                    //if (potential<thresholdConfusion){
-                    if (nodeConfusionSet.size()<Lmax or potential<nodeConfusionSet.back().second[0]){ //suppose is is sorted
-
-
-
-                        //Does this patch respect the patch similarity condition
-                        bool breaked=false;
-                        for (size_t i=0;i<nodeConfusionSet.size();i++){
-                            Point coordinate=nodeConfusionSet[i].first;
-                            int xLabel=coordinate.first;
-                            int yLabel=coordinate.second;
-                            int ssdDistance= ssd(x,y,xLabel,yLabel,mask,patchSize);
-
-                            if (ssdDistance<thresholdSimilarity) {//no need to normalize since patch are full
-                                breaked=true;
-                                break; // we found one to similar no add
-
-                            }
-                        }
-
-
-                        //Is it hasn't break it should be added and inserted in the good position to conserve sort
-
-                        if (not breaked){
-
-                            if (nodeConfusionSet.size()==Lmax){
-                                nodeConfusionSet.pop_back();
-                            }
-
-                            if (nodeConfusionSet.back().second[0]<potential){
-                                Point newCoordonates(x,y);
-                                Messages messages={potential,0,0,0,0};
-                                Belief newNode(newCoordonates,messages);
-                                nodeConfusionSet.push_back(newNode);
-                                break;}
-
-
-                            else{
-                                //std::cout<<"a "<<nodeConfusionSet.size()-2<<std::endl;
-                                for (size_t k=nodeConfusionSet.size()-2;k>0;k--){
-
-                                    //we insert the new label
-                                    //std::cout<<"nodeConfusionSet.size()"<<std::endl;
-                                    //std::cout<<k<<std::endl;
-
-                                    if (potential>=nodeConfusionSet[k].second[0]){
-                                        Point newCoordonates(x,y);
-                                        Messages messages={potential,0,0,0,0};
-
-                                        Belief newNode(newCoordonates,messages);
-                                        //std::cout<<"n "<<nodeConfusionSet.size()<<std::endl;
-
-                                        nodeConfusionSet.insert(nodeConfusionSet.begin()+k+1,newNode);
-                                        breaked=true;
-                                        break;
-
-                                    }
-
-                                    //std::cout<<nodeConfusionSet.size()<<std::endl;
-                                }
-                                if (not breaked){//meaning if no insert has been made <==> best potential
-                                    if (potential>=nodeConfusionSet[0].second[0]){
-                                        Point newCoordonates(x,y);
-                                        Messages messages={potential,0,0,0,0};
-
-                                        Belief newNode(newCoordonates,messages);
-                                        nodeConfusionSet.insert(nodeConfusionSet.begin()+1,newNode);
-                                    }
-                                    else{
-                                        Point newCoordonates(x,y);
-                                        Messages messages={potential,0,0,0,0};
-
-                                        Belief newNode(newCoordonates,messages);
-                                        nodeConfusionSet.insert(nodeConfusionSet.begin(),newNode);
-
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-
-                }
-
-            }
-
-        }
-        //printVector(nodeConfusionSet);
-        //std::cout<<std::is_sorted(nodeConfusionSet.begin(),nodeConfusionSet.end(),compareBeliefByPotential)<<std::endl;
-        if (nodeConfusionSet.size() > Lmin) {
-            bool breaked=false;
-            // Compute b_max from the sorted list
-            int b_max = -nodeConfusionSet[0].second[0];
-
-            size_t validIndex = 0;
-            for (size_t i = 0; i < nodeConfusionSet.size(); ++i) {
-                if (-nodeConfusionSet[i].second[0] - b_max < thresholdConfusion) {
-                    validIndex = i;
-                    breaked=true;
-                    break;
-                }
-            }
-
-            if (breaked){
-
-            if (validIndex < Lmin) {
-                validIndex = Lmin;
-            }
-            while (nodeConfusionSet.size() > validIndex) {
-                   nodeConfusionSet.pop_back();
-            }}
-
-        }
-
-
-
-        confusionSets.push_back(nodeConfusionSet);
-    }
-
-
-
-
-    return confusionSets;
-}
 
 
 /*

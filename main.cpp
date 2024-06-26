@@ -16,10 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "image.h"
 #include "cmdLine.h"
 #include "io_png.h"
 #include <iostream>
+#include "node.h"
 
 /// Default prefix of output image files
 static const char* PREFIX="disparity";
@@ -67,16 +67,16 @@ int main(int argc, char *argv[]) {
 
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
-    std::vector<Node> v=imageExtendedMask.nodesOverMask(patchsize);
 
-    int Lmin=3;
-    int Lmax=20;
+
+    int lmin=3;
+    int lmax=20;
     int thresholdConfusion =-patchsize*patchsize*500;
     int thresholdSimilarity=patchsize*patchsize*10*10*3;
+    std::vector<Node> v=nodesOverMask(imageExtendedMask,patchsize,lmax);
 
-
-    std::vector<ConfusionSet> priorities=imageInput.assignInitialPriority(
-                v,imageExtendedMask,imageMask,patchsize,Lmin,Lmax,thresholdConfusion,thresholdSimilarity);
+    std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
+                                                       patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
     int pruned=0;
     int non_pruned=0;
@@ -86,6 +86,8 @@ int main(int argc, char *argv[]) {
         if (priorities[i].size()>1){non_pruned++;}
     }
 
+    std::cout<<non_pruned<<std::endl;
+    std::cout<<priorities.size()<<std::endl;
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
 
     for (size_t i=0;i<v.size();i++){
@@ -98,17 +100,18 @@ int main(int argc, char *argv[]) {
                             imageInput(xp,yp,1)=255;
                             imageInput(xp,yp,2)=0;}
                 else{
-                imageInput(xp,yp,0)=255-255/Lmax*size;
+                imageInput(xp,yp,0)=255-255/lmax*size;
                 imageInput(xp,yp,1)=0;
                 imageInput(xp,yp,2)=0;}
             }
         }
 
     }
-    imageMask.visualiseNodesAndVertices(v,patchsize);
+
+    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchsize);
 
     // Utile pour enregistrer l'image
-    if(! save_image(argv[3], imageMask)) {
+    if(! save_image(argv[3], nodesAndVertices)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
