@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=41;
+    int patchsize=11;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchsize*patchsize*50;
@@ -78,6 +78,8 @@ int main(int argc, char *argv[]) {
 
     forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
+    Image reconstructed=imageReconstructed(priorities,patchsize,imageInput,imageMask);
+    /*
     int pruned=0;
     int non_pruned=0;
 
@@ -114,14 +116,19 @@ int main(int argc, char *argv[]) {
         }
 
     }
+    */
 
+    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/reconstructed.png", imageInput)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }/*
     Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchsize);
 
     // Utile pour enregistrer l'image
     if(! save_image(argv[3], nodesAndVertices)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
-    }
+    }*/
 
 
     if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/confusion_set.png" , imageInput)) {

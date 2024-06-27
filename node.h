@@ -79,13 +79,15 @@ public:
     int getTopNeighbor(){return topNeighbor;}
     int getBottomNeighbor(){return bottomNeighbor;}
 
-    int size(){return int(nodeConfusionSet.size());}
+    int size()const {return int(nodeConfusionSet.size());}
 
     int worstBelief();
 
+
+
     void pushConditioned(const Label& label,int lmin,int lmax);
 
-    Label label(int i);
+    Label label(int i)const;
 
     bool similarityCondition(const Image &imageInput, Point &pointLabel,int thresholdSimilarity , int patchSize);
     bool thresholdConfusion(int thresholdCondition,int lmin);
@@ -112,3 +114,8 @@ std::vector<Node> assignInitialPriority( const Image& inputImage,const Image& ma
 
 
 void forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+
+
+Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
+
+

@@ -92,7 +92,7 @@ void Node::pushConditioned(const Label& label,int lmin,int lmax) {
     }
 }
 
-Label Node::label(int i){
+Label Node::label(int i) const{
     assert(i<nodeConfusionSet.size());
     return nodeConfusionSet[i];}
 
@@ -520,7 +520,35 @@ void forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, con
 }
 
 
+Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage){
+    std::cout<<"bonjour"<<std::endl;
+    Image imageReconstructed=maskImage.clone();
+    for (size_t i=0;i<InitialPriority.size();i++){
+        std::cout<<i<<std::endl;
+        if (InitialPriority[i].size()>1){
+        Point p=InitialPriority[i].point();
 
+        Label l=InitialPriority[i].label(0);
+        Point lp=l.point();
+        for (int x=-patchSize/2;x<=patchSize/2;x++){
+            for (int y=-patchSize/2;y<=patchSize/2;y++){
+                std::cout<<p.first+x<<"and"<<lp.first+x<<std::endl;
+                if (p.first+x<imageReconstructed.width() && p.first+x>=0
+                        && p.second+x<imageReconstructed.height() && p.first+x>=0
+                        && lp.first+x<imageReconstructed.width() && lp.first+x>=0
+                        && lp.second+x<imageReconstructed.height() && lp.first+x>=0 ){
+                imageReconstructed(p.first+x,p.second+y)=inputImage(lp.first+x,lp.second+y);
+                std::cout<<p.first+x<<"and"<<lp.first+x<<std::endl;
+
+                }
+
+            }
+        }
+    }
+
+    }
+    return imageReconstructed;
+}
 
 
 
