@@ -60,23 +60,23 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=17;
+    int patchsize=41;
+    int lmin=3;
+    int lmax=20;
+    int thresholdConfusion =-patchsize*patchsize*50;
+    int thresholdSimilarity=patchsize*patchsize*10*10*3;
+
 
     Image imageInput = loadImage(argv[1]);
     Image imageMask =loadImage(argv[2]);
-
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
-
-
-    int lmin=3;
-    int lmax=20;
-    int thresholdConfusion =-patchsize*patchsize*500;
-    int thresholdSimilarity=patchsize*patchsize*10*10*3;
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchsize,lmax);
 
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
                                                        patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
+
+    forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
     int pruned=0;
     int non_pruned=0;
@@ -86,23 +86,30 @@ int main(int argc, char *argv[]) {
         if (priorities[i].size()>1){non_pruned++;}
     }
 
-    std::cout<<non_pruned<<std::endl;
-    std::cout<<priorities.size()<<std::endl;
+
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
 
-    for (size_t i=0;i<v.size();i++){
-        int x=v[i].getx();
-        int y=v[i].gety();
+    for (size_t i=0;i<priorities.size();i++){
+        int x=priorities[i].getx();
+        int y=priorities[i].gety();
         int size=priorities[i].size();
-        for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
-            for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
-                if (size==0){imageInput(xp,yp,0)=0;
-                            imageInput(xp,yp,1)=255;
-                            imageInput(xp,yp,2)=0;}
-                else{
-                imageInput(xp,yp,0)=255-255/lmax*size;
-                imageInput(xp,yp,1)=0;
-                imageInput(xp,yp,2)=0;}
+        if (size==0){
+            for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
+                for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
+                    imageInput(xp,yp,0)=0;
+                    imageInput(xp,yp,1)=255;
+                    imageInput(xp,yp,2)=0;
+                }
+            }
+        }
+
+        else{
+            for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
+                for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
+                    imageInput(xp,yp,0)=255-255/lmax*size;
+                    imageInput(xp,yp,1)=0;
+                    imageInput(xp,yp,2)=0;
+                }
             }
         }
 

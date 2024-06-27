@@ -35,15 +35,18 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) 
                 Point p(x,y);
 
                 Node n(index,p,lmax);
+                index++;
                 v.push_back(n);
 
                 //is there an already existing neighbors at the left ???
 
-                if (1<v.size()){
-                    if (v[v.size()-2].getx()==x-patchsize/2 && v[v.size()-2].gety()==y){
-                        v.back().addLeftNeighbor(int(v.size()-2));
-                        v[v.size()-2].addRightNeighbor(int(v.size()-1));
 
+                for (size_t i=0; i<v.size();i++){
+                    if (v[i].getx()==x-patchsize/2 && v[i].gety()==y){
+
+                        v.back().addLeftNeighbor(int(i));
+                        v[i].addRightNeighbor(int(v.size()-1));
+                        break;
 
                     }
                 }
@@ -53,6 +56,7 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) 
                     if (v[i].getx()==x && v[i].gety()==y-patchsize/2){
                         v.back().addTopNeighbor(int(i));
                         v[i].addBottomNeighbor(int(v.size()-1));
+
                         break;
 
                     }
@@ -108,7 +112,7 @@ bool Node::thresholdConfusion(int thresholdConfusion,int lmin){
 
     if (nodeConfusionSet.size() > lmin) {
         bool breaked=false;
-        int maxBelief = -nodeConfusionSet[0].belief();
+        int maxBelief = nodeConfusionSet[0].belief();
 
         size_t validIndex = 0;
         for (size_t i = 0; i < nodeConfusionSet.size(); ++i) {
@@ -187,6 +191,9 @@ Image visualiseNodesAndVertices(Image const &imageMask, std::vector<Node> v,int 
 }
 
 
+
+bool sortArgSize(Node a,Node b){return a.size()<b.size();}
+
 std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& imageMaskExtended,const Image& imageMask,
                                                        int patchSize, int lmin, int lmax,
                                                        int thresholdConfusion, int thresholdSimilarity) {
@@ -195,11 +202,12 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
     std::vector<Node> confusionSets=nodesOverMask(imageMask,patchSize,lmax);
 
 
+
     int progression=0;
 
     // Iterate over each node
     for (size_t i=0;i<confusionSets.size();i++) {
-        std::cout<<i<<"<:"<<confusionSets.size()<<std::endl;
+        //std::cout<<i<<"<:"<<confusionSets.size()<<std::endl;
 
 
         if (i/100>progression){progression=i/100;std::cout<<progression*100<<"/"<<confusionSets.size()<<std::endl;}
@@ -244,11 +252,278 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
         }
         //we then apply the confusion threshold on the remaining confusionset
         confusionSets[i].thresholdConfusion(thresholdConfusion,lmin);
+        if (confusionSets[i].size()==0){std::cout<<"attention"<<std::endl;}
 
 
 
     }
 
-
+    std::sort(confusionSets.begin(),confusionSets.end(),sortArgSize);
     return confusionSets;
 }
+
+bool Node::inStack(const std::vector<int> &stack){
+    for (size_t i=0;i<stack.size();i++){
+        if (stack[i]==index){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+std::vector<bool> intializeFalseVector(int size){
+    std::vector<bool> commitList;
+    for (int i=0;i<size;i++){
+        commitList.push_back(false);
+    }
+    return commitList;
+
+}
+
+
+
+int Node::messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize){
+    int messageSent=0;
+    int bestMessage=1000000;
+    std::vector<Label> confusionSetSender=sender.getNodeConfusionSet();
+
+    for (size_t i=0;i<confusionSetSender.size();i++){
+        Label labelCandidate=confusionSetSender[i];
+        messageSent=labelCandidate.getPotential();
+        messageSent+=imageInput.ssdOverlap(sender.point(),(*this).point(),labelCandidate.point(),coordPatchCandidate,patchSize);
+        if (sender.point().first > (*this).point().first) { // Message from the right
+            messageSent += labelCandidate.getMessageFromRight();
+            messageSent += labelCandidate.getMessageFromTop();
+            messageSent += labelCandidate.getMessageFromBottom();
+        }
+        else if (sender.point().first < (*this).point().first) { // Message from the left
+            messageSent += labelCandidate.getMessageFromLeft();
+            messageSent += labelCandidate.getMessageFromTop();
+            messageSent += labelCandidate.getMessageFromBottom();
+        }
+        else if (sender.point().second > (*this).point().second) { // Message from the top
+            messageSent += labelCandidate.getMessageFromLeft();
+            messageSent += labelCandidate.getMessageFromRight();
+            messageSent += labelCandidate.getMessageFromTop();
+        }
+        else if (sender.point().second < (*this).point().second) { // Message from the bottom
+            messageSent += labelCandidate.getMessageFromLeft();
+            messageSent += labelCandidate.getMessageFromRight();
+            messageSent += labelCandidate.getMessageFromBottom();
+        }
+        else{
+            std::cout<<"index sender : "<<sender.index<<std::endl;
+            std::cout<<"index receiver : "<<(*this).index<<std::endl;
+            std::cout<<"message not from neigbhbor messageReceived"<<std::endl;
+        }
+        if (bestMessage>messageSent){
+            bestMessage=messageSent;
+        }
+    }
+    return  bestMessage;
+}
+
+
+bool sortArgbelief(Label a,Label b){
+    return a.belief()>b.belief();
+}
+void Node::createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+    assert((*this).size()==0);
+    assert((*this).getIndex()!=sender.getIndex());
+    for (int x=patchSize/2;x<imageMaskExtended.width()-patchSize/2;x++) {
+        for (int y=patchSize/2;y<imageMaskExtended.height()-patchSize/2;y++){
+
+
+            Point labelPoint(x,y);
+            Label currentLabel(labelPoint,0);
+            int messageFromSender=(*this).messageReceived(sender,labelPoint,imageInput,patchSize);
+
+            if (sender.point().first>(*this).point().first){//Message from the right
+                currentLabel.setMessageFromRight(messageFromSender);//pos potential left right top botoom
+            }
+            else if(sender.point().first<(*this).point().first){//Message from the left
+                currentLabel.setMessageFromLeft(messageFromSender);
+            }
+            else if(sender.point().second>(*this).point().second){//Message from the top
+                currentLabel.setMessageFromTop(messageFromSender);
+            }
+            else if (sender.point().second<(*this).point().second) {//Message from the bottom
+                currentLabel.setMessageFromBottom(messageFromSender);
+            }
+            else{
+                std::cout<<"message node from neighbor createNodeConfusionSet"<<std::endl;
+                /*
+                std::cout<<"index sender : "<<sender.getIndex()<<std::endl;
+                std::cout<<"index receiver : "<<(*this).getIndex()<<std::endl;
+                std::cout<<"x sender :"<<sender.point().first<<std::endl;
+                std::cout<<"y sender :"<<sender.point().second<<std::endl;
+                std::cout<<"x receiver :"<<(*this).point().first<<std::endl;
+                std::cout<<"y receiver :"<<(*this).point().second<<std::endl;
+                ;*/
+
+            }
+
+
+
+            if (imageMaskExtended(x,y)<128){ //black pixel ==> possible label candidate
+
+
+
+                //If the size condition is met we start to discriminate the patches
+                //if (potential<thresholdConfusion){
+                if (currentLabel.belief()>(*this).worstBelief()){ //suppose is is sorted
+                    if ( (*this).similarityCondition(imageInput,labelPoint,thresholdSimilarity,patchSize)){
+                        (*this).pushConditioned(currentLabel,lmin,lmax);
+                    }
+                }
+
+            }
+
+        }
+
+    }
+     (*this).thresholdConfusion(thresholdConfusion,lmin);
+}
+
+
+void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+    assert((*this).size()>0);
+    std::vector<Label> receiverNodeConfusionSet=(*this).getNodeConfusionSet();
+    for (size_t i=0;i<(*this).size();i++) {
+
+
+            Point labelPoint(receiverNodeConfusionSet[i].point());
+            Label currentLabel(labelPoint,0);
+            int messageFromSender=(*this).messageReceived(sender,labelPoint,imageInput,patchSize);
+            if (sender.point().first>(*this).point().first){//Message from the right
+                currentLabel.setMessageFromRight(messageFromSender);//pos potential left right top botoom
+            }
+            else if(sender.point().first<(*this).point().first){//Message from the left
+                currentLabel.setMessageFromLeft(messageFromSender);
+            }
+            else if(sender.point().second>(*this).point().second){//Message from the top
+                currentLabel.setMessageFromTop(messageFromSender);
+            }
+            else if (sender.point().second<(*this).point().second) {//Message from the bottom
+                currentLabel.setMessageFromBottom(messageFromSender);
+            }
+            else{
+                std::cout<<"message not from neighbor updateNodeConfusionSet"<<std::endl;
+            }
+
+        }
+    std::sort(receiverNodeConfusionSet.begin(),receiverNodeConfusionSet.end(),sortArgbelief);
+    (*this).thresholdConfusion(thresholdConfusion,lmin);
+
+    }
+
+
+void updatePriority(size_t index, std::vector<Node> &InitialPriority) {
+    if (index >= InitialPriority.size()) {
+        std::cout<<"index to high updatePriority"<<std::endl;
+        return;
+    }
+
+    Node nodeToMove = InitialPriority[index];
+
+    // Find the correct position for the node
+    std::vector<Node>::iterator it = std::lower_bound(InitialPriority.begin(), InitialPriority.end(), nodeToMove, sortArgSize);
+
+    // If the node is already in the correct position
+    if (it - InitialPriority.begin() == static_cast<long>(index)) {
+        return;
+    }
+
+    InitialPriority.erase(InitialPriority.begin() + index);
+
+    InitialPriority.insert(it, nodeToMove);
+}
+
+int commitListSum(const std::vector<bool> &commitStack){
+    int sum=0;
+    for (size_t i=0;i<commitStack.size();i++){
+        if (commitStack[i]){sum++;}
+    }
+    return sum;
+}
+
+Node getNodeOfIndex(const std::vector<Node> &InitialPriority, int j ){
+    for (size_t i =0;i<InitialPriority.size();i++){
+        if (InitialPriority[i].getIndex()==j) return InitialPriority[i];
+    }
+    assert(false);
+}
+
+void forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+    std::vector<int> commitStack;
+    std::vector<bool> commitList=intializeFalseVector(InitialPriority.size());
+    size_t indexCommitSearch;
+    for (size_t time=0;time<InitialPriority.size();time++){
+        std::cout<<"time: "<<time<<std::endl;
+
+        indexCommitSearch=0;
+        while (commitList[InitialPriority[indexCommitSearch].getIndex()]){
+            indexCommitSearch++;
+        }
+
+
+        Node currentNode(InitialPriority[indexCommitSearch]);
+        commitStack.push_back(currentNode.getIndex());
+        commitList[InitialPriority[indexCommitSearch].getIndex()]=true;
+
+        if (currentNode.hasLeftNeighbor() && not commitList[currentNode.getLeftNeighbor()]) {
+            int indexLeftNeighbor = currentNode.getLeftNeighbor();
+            Node leftNeighbor(getNodeOfIndex(InitialPriority,indexLeftNeighbor));
+            if (leftNeighbor.size() == 0) { // interior
+                leftNeighbor.createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+            else {
+                leftNeighbor.updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+        }
+
+        if (currentNode.hasRightNeighbor() && not commitList[currentNode.getRightNeighbor()]) {
+            int indexRightNeighbor = currentNode.getRightNeighbor();
+            Node rightNeighbor(getNodeOfIndex(InitialPriority,indexRightNeighbor));
+            if (rightNeighbor.size() == 0) { // interior
+                rightNeighbor.createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+            else {
+                rightNeighbor.updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+        }
+
+        if (currentNode.hasTopNeighbor() && not commitList[currentNode.getTopNeighbor()]) {
+            int indexTopNeighbor = currentNode.getTopNeighbor();
+            Node topNeighbor(getNodeOfIndex(InitialPriority,indexTopNeighbor));
+            if (topNeighbor.size() == 0) { // interior
+                topNeighbor.createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+            else {
+                topNeighbor.updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+        }
+
+        if (currentNode.hasBottomNeighbor() && not commitList[currentNode.getBottomNeighbor()]) {
+            int indexBottomNeighbor = currentNode.getBottomNeighbor();
+            Node bottomNeighbor(getNodeOfIndex(InitialPriority,indexBottomNeighbor));
+            if (bottomNeighbor.size() == 0) { // interior
+                bottomNeighbor.createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+            else {
+                bottomNeighbor.updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            }
+        }
+        std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
+    }
+}
+
+
+
+
+
+
+
+
+

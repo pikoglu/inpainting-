@@ -444,3 +444,40 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
 
     return confusionSets;
 }*/
+
+
+int Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) const {
+    int ssd = 0;
+
+    if (n1.first < n2.first) {
+        for (int x = -patchSize/2; x <= 0; x++) {
+            for (int y = -patchSize/2; y <= patchSize/2; y++) {
+                int diff = (*this)(p1.first +patchSize/2 + x, p1.second + y) - (*this)(p2.first + x, p2.second + y);
+                ssd += diff * diff;
+            }
+        }
+    } else if (n2.first < n1.first) {
+        for (int x = -patchSize/2; x <= 0; x++) {
+            for (int y = -patchSize/2; y <= patchSize/2; y++) {
+                int diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + patchSize/2 + x, p2.second + y);
+                ssd += diff * diff;
+            }
+        }
+    } else if (n1.second < n2.second) {
+        for (int x = -patchSize/2; x <= patchSize/2; x++) {
+            for (int y = 0; y < patchSize/2 + 1; y++) {
+                int diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + x, p2.second - patchSize/2 - 1 + y);
+                ssd += diff * diff;
+            }
+        }
+    } else {
+        for (int x = -patchSize/2; x <= patchSize/2; x++) {
+            for (int y = -patchSize/2; y <= 0; y++) {
+                int diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + x, p2.second + patchSize/2 + y);
+                ssd += diff * diff;
+            }
+        }
+    }
+
+    return ssd;
+}
