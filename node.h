@@ -90,7 +90,7 @@ public:
     Label label(int i)const;
 
     bool similarityCondition(const Image &imageInput, Point &pointLabel,int thresholdSimilarity , int patchSize);
-    bool thresholdConfusion(int thresholdCondition,int lmin);
+    void thresholdConfusion(int thresholdCondition,int lmin);
 
     bool inStack(const std::vector<int> &stack);
 

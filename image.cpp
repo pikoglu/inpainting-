@@ -238,7 +238,6 @@ int Image::getPatchIndexFromCoordinates(int x, int y, int patchSize) const {
     int width = this->width();
     int height = this->height();
     int numPatches = (width - patchSize + 1) * (height - patchSize + 1);
-    int halfPatchSize = patchSize / 2;
 
     int* centers = this->listPatchCenters(patchSize);
 

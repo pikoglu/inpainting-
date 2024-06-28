@@ -1,5 +1,5 @@
 #include "node.h"
-
+#include <algorithm>
 
 
 
@@ -108,7 +108,7 @@ bool Node::similarityCondition(const Image &imageInput, Point &pointLabel,int th
 
 
 
-bool Node::thresholdConfusion(int thresholdConfusion,int lmin){
+void Node::thresholdConfusion(int thresholdConfusion,int lmin){
 
     if (nodeConfusionSet.size() > lmin) {
         bool breaked=false;
