@@ -37,6 +37,9 @@ public:
     int getMessageFromRight() const { return messageFromRight; }
     int getMessageFromTop() const { return messageFromTop; }
     int getMessageFromBottom() const { return messageFromBottom; }
+
+    int getx(){return _point.first;}
+    int gety(){return _point.second;}
 };
 
 
@@ -56,13 +59,24 @@ class Node{
 public:
     Node(int index,Point nodePoint,int lmax);
 
+    Node(const Node& other)
+            : index(other.index)
+            , nodePoint(other.nodePoint)
+            , leftNeighbor(other.leftNeighbor)
+            , topNeighbor(other.topNeighbor)
+            , rightNeighbor(other.rightNeighbor)
+            , bottomNeighbor(other.bottomNeighbor)
+            , nodeConfusionSet(other.nodeConfusionSet) // This creates a shallow copy of the vector
+        {}
+
     int gety() const {return nodePoint.second;}
     int getx() const {return nodePoint.first;}
     Point point()const{return nodePoint;}
     int getIndex()const {return index;}
 
 
-    std::vector<Label> getNodeConfusionSet()const{return nodeConfusionSet;}
+    std::vector<Label>& getNodeConfusionSet() { return nodeConfusionSet; }
+    const std::vector<Label>& getNodeConfusionSet() const { return nodeConfusionSet; }
     void addLeftNeighbor(int i){leftNeighbor=i;}
     void addRightNeighbor(int i){rightNeighbor=i;}
     void addTopNeighbor(int i){topNeighbor=i;}
@@ -113,7 +127,7 @@ std::vector<Node> assignInitialPriority( const Image& inputImage,const Image& ma
 
 
 
-void forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
 
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);

@@ -60,26 +60,27 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=11;
+    int patchsize=31;
     int lmin=3;
     int lmax=20;
-    int thresholdConfusion =-patchsize*patchsize*50;
-    int thresholdSimilarity=patchsize*patchsize*10*10*3;
+    int thresholdConfusion =-patchsize*patchsize*200;
+    int thresholdSimilarity=patchsize*patchsize*10*10*3*10;//à diminuer
 
 
     Image imageInput = loadImage(argv[1]);
     Image imageMask =loadImage(argv[2]);
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
+
+    Image confusionSet=imageInput.clone();
+
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchsize,lmax);
 
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
                                                        patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
-    forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
-    Image reconstructed=imageReconstructed(priorities,patchsize,imageInput,imageMask);
-    /*
+
     int pruned=0;
     int non_pruned=0;
 
@@ -98,9 +99,9 @@ int main(int argc, char *argv[]) {
         if (size==0){
             for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
                 for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
-                    imageInput(xp,yp,0)=0;
-                    imageInput(xp,yp,1)=255;
-                    imageInput(xp,yp,2)=0;
+                    confusionSet(xp,yp,0)=0;
+                    confusionSet(xp,yp,1)=255;
+                    confusionSet(xp,yp,2)=0;
                 }
             }
         }
@@ -108,30 +109,39 @@ int main(int argc, char *argv[]) {
         else{
             for (int xp=x-patchsize/2;xp<=x+patchsize/2;xp++){
                 for (int yp=y-patchsize/2;yp<=y+patchsize/2;yp++){
-                    imageInput(xp,yp,0)=255-255/lmax*size;
-                    imageInput(xp,yp,1)=0;
-                    imageInput(xp,yp,2)=0;
+                    confusionSet(xp,yp,0)=255-255/lmax*size;
+                    confusionSet(xp,yp,1)=0;
+                    confusionSet(xp,yp,2)=0;
                 }
             }
         }
 
     }
-    */
 
-    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/reconstructed.png", imageInput)) {
+    Image orderOfVisit=forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+
+    Image reconstructed=imageReconstructed(priorities,patchsize,imageInput,imageMask);
+
+    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/order_visit.png", orderOfVisit)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
-    }/*
-    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchsize);
+    }
+
+
+    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/reconstructed.png", reconstructed)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+    Image nodesAndVertices=visualiseNodesAndVertices(reconstructed,v,patchsize);
 
     // Utile pour enregistrer l'image
     if(! save_image(argv[3], nodesAndVertices)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
-    }*/
+    }
 
 
-    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/confusion_set.png" , imageInput)) {
+    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/confusion_set.png" , confusionSet)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
