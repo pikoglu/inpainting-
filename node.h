@@ -3,7 +3,6 @@
 #include <array>
 #include <iostream>
 #include "image.h"
-#include <cassert>
 #include <limits>
 
 typedef std::pair<int, int> Point;
@@ -11,10 +10,10 @@ typedef std::pair<int, int> Point;
 class Label {
     Point _point;
     int potential;
-    int messageFromLeft;
-    int messageFromRight;
-    int messageFromTop;
-    int messageFromBottom;
+    double messageFromLeft;
+    double messageFromRight;
+    double messageFromTop;
+    double messageFromBottom;
 
 public:
 
@@ -109,7 +108,7 @@ public:
     bool inStack(const std::vector<int> &stack);
 
     void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
-    int messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
+    double messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
     void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
 };
 

@@ -68,7 +68,7 @@ public:
 
     Image extendMask(int patchsize) const;
 
-    int ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize)const ;
+    double ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize)const ;
 
 
 

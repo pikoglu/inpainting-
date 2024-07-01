@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=31;
+    int patchsize=15;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchsize*patchsize*200;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    Image nodesAndVertices=visualiseNodesAndVertices(reconstructed,v,patchsize);
+    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchsize);
 
     // Utile pour enregistrer l'image
     if(! save_image(argv[3], nodesAndVertices)) {
