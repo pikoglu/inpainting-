@@ -21,24 +21,39 @@ public:
             : _point(p), potential(pot), messageFromLeft(mLeft), messageFromRight(mRight),
               messageFromTop(mTop), messageFromBottom(mBottom) {}
 
-    int belief()const{return -potential-messageFromLeft- messageFromRight-messageFromTop-messageFromBottom;}
+    double belief()const{return -potential-messageFromLeft- messageFromRight-messageFromTop-messageFromBottom;}
 
-    Point point(){return _point ;}
+    const Point & point()const {return _point ;}
 
-    int getPotential(){return potential;}
+    double getPotential(){return potential;}
 
-    void setMessageFromLeft(int message){messageFromLeft=message;}
-    void setMessageFromRight(int message){messageFromRight=message;}
-    void setMessageFromTop(int message){messageFromTop=message;}
-    void setMessageFromBottom(int message){messageFromBottom=message;}
+    void setMessageFromLeft(double message){messageFromLeft=message;}
+    void setMessageFromRight(double  message){messageFromRight=message;}
+    void setMessageFromTop(double message){messageFromTop=message;}
+    void setMessageFromBottom(double message){messageFromBottom=message;}
 
-    int getMessageFromLeft() const { return messageFromLeft; }
-    int getMessageFromRight() const { return messageFromRight; }
-    int getMessageFromTop() const { return messageFromTop; }
-    int getMessageFromBottom() const { return messageFromBottom; }
+    double getMessageFromLeft() const { return messageFromLeft; }
+    double getMessageFromRight() const { return messageFromRight; }
+    double getMessageFromTop() const { return messageFromTop; }
+    double getMessageFromBottom() const { return messageFromBottom; }
 
-    int getx(){return _point.first;}
-    int gety(){return _point.second;}
+    int getx()const{return _point.first;}
+    int gety()const {return _point.second;}
+
+    int minMessage()const{return std::min(std::min(messageFromLeft>0?messageFromLeft:0,messageFromRight>0?messageFromRight:0),std::min(messageFromTop>0?messageFromTop:0,messageFromBottom>0?messageFromBottom:0));}
+
+    int maxMessage()const {return std::max(std::max(messageFromLeft,messageFromRight),std::max(messageFromTop,messageFromBottom));}
+
+    void normalizeMessage(){int minMessage_=minMessage();
+        messageFromLeft-=minMessage_;
+        messageFromRight-=minMessage_;
+        messageFromTop-=minMessage_;
+        messageFromBottom-=minMessage_;
+
+
+    }
+
+
 };
 
 
@@ -98,18 +113,20 @@ public:
 
 
 
-    void pushConditioned(const Label& label,int lmin,int lmax);
+    void pushConditioned(const Image &imageInput,const Label& label,int lmin,int lmax,int thresholdSimilarity,int patchSize);
 
     Label label(int i)const;
 
-    bool similarityCondition(const Image &imageInput, Point &pointLabel,int thresholdSimilarity , int patchSize);
-    bool thresholdConfusion(int thresholdCondition,int lmin);
+    bool similarityCondition(const Image &imageInput,const Point &pointLabel,int thresholdSimilarity , int patchSize);
+    void pruningThresholdConfusion(int thresholdCondition,int lmin);
 
     bool inStack(const std::vector<int> &stack);
 
-    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int pruningThresholdConfusion,int lmin,int lmax);
     double messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
-    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int pruningThresholdConfusion,int lmin,int lmax);
+
+    void normalizeMessage();
 };
 
 
@@ -131,4 +148,4 @@ Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, co
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
 
-
+Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &imageInput,int patchSize, int index);

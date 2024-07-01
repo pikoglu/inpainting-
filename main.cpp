@@ -55,20 +55,32 @@ Image loadImage(const char* name) {
 /// Main program
 int main(int argc, char *argv[]) {
 
-    if (argc!=4 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
+    std::cout<<"bonjour"<<std::endl;
+
+    if (argc!=2 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
         std::cout<<argc<<std::endl;
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=15;
+    int patchsize=55;
     int lmin=3;
     int lmax=20;
-    int thresholdConfusion =-patchsize*patchsize*200;
-    int thresholdSimilarity=patchsize*patchsize*10*10*3*10;//à diminuer
+    int thresholdConfusion =-patchsize*patchsize*1000;//à diminuer
+    int thresholdSimilarity=patchsize*patchsize*500;//à diminuer
 
 
-    Image imageInput = loadImage(argv[1]);
-    Image imageMask =loadImage(argv[2]);
+
+
+    //imageInput is located in argv[1]+'/baseball.png'
+    std::string imagePath = std::string(argv[1]) + "/baseball.png";
+    Image imageInput=loadImage(imagePath.c_str());
+
+
+    //The mask is located in argv[1]+'/mask_baseball.png'
+    std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
+    Image imageMask=loadImage(maskPath.c_str());
+
+
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
 
 
@@ -88,7 +100,6 @@ int main(int argc, char *argv[]) {
         if (priorities[i].size()<20 && priorities[i].size()>1){pruned++;}
         if (priorities[i].size()>1){non_pruned++;}
     }
-
 
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
 
@@ -120,31 +131,43 @@ int main(int argc, char *argv[]) {
 
     Image orderOfVisit=forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
+    for (size_t i=0;i<v.size();i++){
+        Image candidates=visualizeCandidate(priorities,imageInput,patchsize,i);
+        if (!save_image(std::string(std::string(argv[1]) + "/candidates/"+std::to_string(i)+".png").c_str(),candidates)){
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+    }
+
+
+
     Image reconstructed=imageReconstructed(priorities,patchsize,imageInput,imageMask);
 
-    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/order_visit.png", orderOfVisit)) {
+    if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
 
 
-    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/reconstructed.png", reconstructed)) {
+    if(! save_image(std::string(std::string(argv[1]) + "/reconstructed.png").c_str(), reconstructed)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
     Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchsize);
 
     // Utile pour enregistrer l'image
-    if(! save_image(argv[3], nodesAndVertices)) {
+    if(! save_image(std::string(std::string(argv[1]) + "/nodes_and_vertices.png").c_str(), nodesAndVertices)){
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+
+    if(! save_image(std::string(std::string(argv[1]) + "/confusion_set.png").c_str(), confusionSet)){
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
 
 
-    if(! save_image("/Users/felixfourreau/Desktop/ProjetStageCourt/data/confusion_set.png" , confusionSet)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
+
 
 
 
