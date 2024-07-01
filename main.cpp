@@ -21,14 +21,6 @@
 #include <iostream>
 #include "node.h"
 
-/// Default prefix of output image files
-static const char* PREFIX="disparity";
-static const char* SUFFIX1=".tif";     ///< Suffix for output 1: dense disparity
-static const char* SUFFIX2="_occ.tif"; ///< Suffix for output 2: LR filtered
-static const char* SUFFIX3="_pp.tif";  ///< Suffix for output 3: post_processed
-
-
-
 /// Load color image
 Image loadImage(const char* name) {
     size_t width, height;
