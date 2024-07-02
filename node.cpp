@@ -300,6 +300,15 @@ std::vector<bool> intializeFalseVector(int size){
 
 }
 
+std::vector<bool> intializeTrueVector(int size){
+    std::vector<bool> commitList;
+    for (int i=0;i<size;i++){
+        commitList.push_back(true);
+    }
+    return commitList;
+
+}
+
 
 void Node::normalizeMessage(){
 
@@ -525,10 +534,10 @@ size_t getNodeOfCoord(const std::vector<Node>& InitialPriority, int x,int y) {
     throw std::runtime_error("Node not found");//en ajouter partour
 }
 
-Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput, const Image &imageMaskExtended, Image &orderOfVisit, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax){
     std::vector<int> commitStack;
     std::vector<bool> commitList=intializeFalseVector(InitialPriority.size());
-    Image orderOfVisit=imageMaskExtended.clone();
+    orderOfVisit=imageMaskExtended.clone();
     size_t indexCommitSearch;
     int progression=0;
     for (size_t time=0;time<InitialPriority.size();time++){
@@ -542,6 +551,7 @@ Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, co
             indexCommitSearch++;
         }
         Node currentNode(InitialPriority[indexCommitSearch]);
+
 
 
 
@@ -613,11 +623,10 @@ Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, co
         }
         std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
     }
-    return orderOfVisit;
+    return commitStack;
 }
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage){
-
     Image imageReconstructed=inputImage.clone();
     for (size_t i = InitialPriority.size(); i-- > 0; ) {//cor
         if (true){//InitialPriority[i].size()>1){
@@ -666,6 +675,84 @@ Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &i
     return candidate;
 
 }
+
+
+Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+    std::vector<bool> commitList=intializeTrueVector(InitialPriority.size());
+    Image orderOfVisit=imageMaskExtended.clone();
+    int index;
+    int progression=0;
+    for (size_t time=0;time<InitialPriority.size();time++){
+
+        if (time/100>progression){
+            progression++;
+            std::cout<<time<<"/"<<InitialPriority.size() <<std::endl;
+        }
+        index=commitStack.back();
+        commitStack.pop_back();
+
+        Node currentNode(InitialPriority[getNodeOfIndex(InitialPriority,index)]);
+
+
+
+
+
+
+        commitList[index]=false;
+
+
+        //Temporaire
+        for (int x=-patchSize/2;x<=patchSize/2;x++){
+            for (int y=-patchSize/2;y<=patchSize/2;y++){
+                orderOfVisit(currentNode.getx() +x,currentNode.gety()+y,0)=int((float(time)-1)/float(InitialPriority.size())*255);
+
+            }
+
+        }
+
+        //fin temporaire
+
+
+        if (currentNode.hasLeftNeighbor() &&  commitList[currentNode.getLeftNeighbor()]) {
+
+            int indexLeftNeighbor = getNodeOfIndex(InitialPriority, currentNode.getLeftNeighbor());
+
+
+            InitialPriority[indexLeftNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+
+        }
+
+        if (currentNode.hasRightNeighbor() &&  commitList[currentNode.getRightNeighbor()]) {
+            int indexRightNeighbor = getNodeOfIndex(InitialPriority, currentNode.getRightNeighbor());
+
+
+            InitialPriority[indexRightNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+
+        }
+
+        if (currentNode.hasTopNeighbor() &&  commitList[currentNode.getTopNeighbor()]) {
+            int indexTopNeighbor = getNodeOfIndex(InitialPriority, currentNode.getTopNeighbor());
+
+
+
+                InitialPriority[indexTopNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+
+        }
+
+        if (currentNode.hasBottomNeighbor() &&  commitList[currentNode.getBottomNeighbor()]) {
+            int indexBottomNeighbor = getNodeOfIndex(InitialPriority, currentNode.getBottomNeighbor());
+
+
+
+                InitialPriority[indexBottomNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+
+        }
+        std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
+    }
+    return orderOfVisit;
+}
+
+
 
 
 

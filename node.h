@@ -49,9 +49,12 @@ public:
         messageFromRight-=minMessage_;
         messageFromTop-=minMessage_;
         messageFromBottom-=minMessage_;
-
-
     }
+
+    Label copy() const {
+        return Label(_point, potential, messageFromLeft, messageFromRight, messageFromTop, messageFromBottom);
+    }
+
 
 
 };
@@ -127,6 +130,17 @@ public:
     void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int pruningThresholdConfusion,int lmin,int lmax);
 
     void normalizeMessage();
+
+    Label getBestLabel() const{
+        Label bestLabel=label(0).copy();
+        for (int i=0;i<size();i++){
+            if (label(i).belief()>bestLabel.belief()){
+                bestLabel=label(i).copy();
+                std::cout<<"0 isnt best label"<<std::cout;
+            }
+        }
+        return bestLabel;
+    };
 };
 
 
@@ -143,9 +157,13 @@ std::vector<Node> assignInitialPriority( const Image& inputImage,const Image& ma
 
 
 
-Image forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+std::vector<int> forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,Image &orderOfPassage,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
 
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
 
 Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &imageInput,int patchSize, int index);
+
+Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+
+size_t getNodeOfIndex(const std::vector<Node>& InitialPriority, int j);
