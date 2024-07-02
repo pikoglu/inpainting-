@@ -47,14 +47,13 @@ Image loadImage(const char* name) {
 /// Main program
 int main(int argc, char *argv[]) {
 
-    std::cout<<"bonjour"<<std::endl;
 
     if (argc!=2 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
         std::cout<<argc<<std::endl;
         std::cout<<"Une seule image demandée"<<std::endl;
         return 0; //here we only want one picture --> test
     }
-    int patchsize=55;
+    int patchsize=5;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchsize*patchsize*1000;//à diminuer
@@ -70,27 +69,46 @@ int main(int argc, char *argv[]) {
 
     //The mask is located in argv[1]+'/mask_baseball.png'
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
-    Image imageMask=loadImage(maskPath.c_str());
+    Image imageMaskTemp=loadImage(maskPath.c_str());
+    std::cout<<"bonjour"<<std::endl;
 
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(176,125,2,2);
+
+    if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
     Image imageExtendedMask=imageMask.gray().extendMask(patchsize);
+
+    if(! save_image(std::string(std::string(argv[1]) + "/imageExtendedMask.png").c_str(), imageExtendedMask)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+
+    std::cout<<"bonjour"<<std::endl;
 
 
     Image confusionSet=imageInput.clone();
 
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchsize,lmax);
 
+    std::cout<<"bonjour"<<std::endl;
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
-                                                       patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
+                                                         patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
 
+    std::cout<<"bonjour"<<std::endl;
 
     int pruned=0;
     int non_pruned=0;
 
     for (size_t i=0;i<priorities.size();i++){
         if (priorities[i].size()<20 && priorities[i].size()>1){pruned++;}
-        if (priorities[i].size()>1){non_pruned++;}
+        if (priorities[i].size()>1){
+            non_pruned++;
+
+        }
     }
 
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
@@ -123,6 +141,7 @@ int main(int argc, char *argv[]) {
 
     Image orderOfVisit=forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
+    std::cout<<"bonjour"<<std::endl;
     for (size_t i=0;i<v.size();i++){
         Image candidates=visualizeCandidate(priorities,imageInput,patchsize,i);
         if (!save_image(std::string(std::string(argv[1]) + "/candidates/"+std::to_string(i)+".png").c_str(),candidates)){

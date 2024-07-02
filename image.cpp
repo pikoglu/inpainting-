@@ -27,22 +27,22 @@
 ///
 /// The main interest of this one is to allow arrays of Image.
 Image::Image()
-: count(0), tab(0), w(0), h(0), c(0) {}
+    : count(0), tab(0), w(0), h(0), c(0) {}
 
 /// Constructor
 Image::Image(int width, int height, int channels)
-: count(new int(1)), tab(new float[width*height*channels]),
-  w(width), h(height), c(channels) {}
+    : count(new int(1)), tab(new float[width*height*channels]),
+    w(width), h(height), c(channels) {}
 
 /// Constructor with array of pixels.
 ///
 /// Make sure it is not deleted during the lifetime of the image.
 Image::Image(float* pix, int width, int height, int channels)
-: count(0), tab(pix), w(width), h(height), c(channels) {}
+    : count(0), tab(pix), w(width), h(height), c(channels) {}
 
 /// Copy constructor (shallow copy)
 Image::Image(const Image& I)
-: count(I.count), tab(I.tab), w(I.w), h(I.h), c(I.c) {
+    : count(I.count), tab(I.tab), w(I.w), h(I.h), c(I.c) {
     if(count)
         ++*count;
 }
@@ -287,7 +287,8 @@ Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
                 while(x<width && (*this)(x, y) > 128){x++;}
 
                 if (x<width){
-                    for (int i = std::min(width-1, x + patchsize/2); i >= x; --i) {//attention x n'est pas dans le masque
+                    for (int i = x; i<std::min(width, x + patchsize/2); ++i) {//attention x n'est pas dans le masque
+                        std::cout<<x<<std::endl;
                         extendedMask(i, y) = 255;
                     }
                 }
@@ -299,17 +300,18 @@ Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
     Image extendedMaskTemp=extendedMask.clone();
 
     for (int x = 0; x < width; ++x) {
-            for (int y = 0; y < height; ++y) {
-                if ((extendedMaskTemp)(x, y) > 128) {
-                    for (int i = std::max(0, y - patchsize/2 ); i < y; ++i) {
-                        extendedMask(x, i) = 255;}
+        for (int y = 0; y < height; ++y) {
+            if ((extendedMaskTemp)(x, y) > 128) {
+                for (int i = std::max(0, y - patchsize/2 ); i < y; ++i) {
+                    extendedMask(x, i) = 255;
+                }
+                y++;
+                while (y < height && (extendedMaskTemp)(x, y) > 128) {
                     y++;
-                    while (y < height && (extendedMaskTemp)(x, y) > 128) {
-                        y++;
-                    }
-                    if (y < height) {
-                        for (int i = y; i < std::min(height, y + patchsize/2); ++i) {
-                            extendedMask(x, i) = 255;
+                }
+                if (y < height) {
+                    for (int i = y; i < std::min(height, y + patchsize/2); ++i) {
+                        extendedMask(x, i) = 255;
                     }
                 }
             }
@@ -359,11 +361,9 @@ bool compareBeliefByPotential(const Belief& a, const Belief& b) { //pour trier C
 
 
 void printVector(ConfusionSet const nodeConfusionSet){
-    std::cout<<"debut"<<std::endl;
     for (size_t i=0;i<nodeConfusionSet.size();i++){
         std::cout<<nodeConfusionSet[i].second[0]<<std::endl;
     }
-    std::cout<<"fin"<<std::endl;
 
 }
 
@@ -451,6 +451,9 @@ double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) 
     if (n1.first +patchSize/2==n2.first) { //node 1 on the left
         for (int x = -patchSize/2; x <= 0; x++) {
             for (int y = -patchSize/2; y <= patchSize/2; y++) {
+
+
+
                 double diff = (*this)(p1.first +patchSize/2 + x, p1.second + y) - (*this)(p2.first + x, p2.second + y);
                 ssd += diff * diff;
             }
@@ -458,6 +461,7 @@ double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) 
     } else if (n2.first +patchSize/2 == n1.first) {//node 2 on the left
         for (int x = -patchSize/2; x <= 0; x++) {
             for (int y = -patchSize/2; y <= patchSize/2; y++) {
+
                 double diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + patchSize/2 + x, p2.second + y);
                 ssd += diff * diff;
             }
@@ -465,13 +469,19 @@ double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) 
     } else if (n1.second+patchSize/2 == n2.second) {//n1 on the bottom
         for (int x = -patchSize/2; x <= patchSize/2; x++) {
             for (int y = 0; y < patchSize/2 + 1; y++) {
-                double diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + x, p2.second - patchSize/2 - 1 + y);
+
+
+                double diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + x, p2.second - patchSize/2  + y);
                 ssd += diff * diff;
             }
         }
     } else if (n2.second+patchSize/2 == n1.second){//n2 on the bottom
         for (int x = -patchSize/2; x <= patchSize/2; x++) {
             for (int y = -patchSize/2; y <= 0; y++) {
+
+
+
+
                 double diff = (*this)(p1.first + x, p1.second + y) - (*this)(p2.first + x, p2.second + patchSize/2 + y);
                 ssd += diff * diff;
             }
@@ -481,5 +491,24 @@ double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) 
         std::cout<<"error std overlap"<<std::endl;
     }
 
+
     return ssd;
+}
+
+
+Image Image::simplifyMaskToOnePixel(int x, int y, int taillex, int tailley)const{
+    Image simplifiedMask=(*this).clone();
+    for (size_t xp=0;xp<simplifiedMask.width();xp++){
+        for (size_t yp=0;yp<simplifiedMask.height();yp++){
+            if (xp>x-taillex && xp<x+taillex && yp<y+tailley && yp>y-tailley) {
+                simplifiedMask(xp,yp,0)=255;
+                simplifiedMask(xp,yp,1)=255;
+                simplifiedMask(xp,yp,2)=255;continue;}
+            simplifiedMask(xp,yp,0)=0;
+            simplifiedMask(xp,yp,1)=0;
+            simplifiedMask(xp,yp,2)=0;
+
+        }
+    }
+    return simplifiedMask;
 }

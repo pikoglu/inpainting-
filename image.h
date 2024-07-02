@@ -74,6 +74,8 @@ public:
 
     bool isPatchInsideMask(Point patchPoint , int patchSize) const;
 
+    Image simplifyMaskToOnePixel(int x,int y,int taillex,int tailley)const;
+
 
 
 
