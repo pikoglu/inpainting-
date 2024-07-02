@@ -70,9 +70,8 @@ int main(int argc, char *argv[]) {
     //The mask is located in argv[1]+'/mask_baseball.png'
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
-    std::cout<<"bonjour"<<std::endl;
 
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(176,125,2,2);
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(152,111,7,7);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -86,19 +85,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    std::cout<<"bonjour"<<std::endl;
 
 
     Image confusionSet=imageInput.clone();
 
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchsize,lmax);
 
-    std::cout<<"bonjour"<<std::endl;
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
                                                          patchsize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
 
-    std::cout<<"bonjour"<<std::endl;
 
     int pruned=0;
     int non_pruned=0;
@@ -141,7 +137,6 @@ int main(int argc, char *argv[]) {
 
     Image orderOfVisit=forwardPass(priorities,imageInput,imageExtendedMask,patchsize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
-    std::cout<<"bonjour"<<std::endl;
     for (size_t i=0;i<v.size();i++){
         Image candidates=visualizeCandidate(priorities,imageInput,patchsize,i);
         if (!save_image(std::string(std::string(argv[1]) + "/candidates/"+std::to_string(i)+".png").c_str(),candidates)){

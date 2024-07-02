@@ -288,7 +288,6 @@ Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
 
                 if (x<width){
                     for (int i = x; i<std::min(width, x + patchsize/2); ++i) {//attention x n'est pas dans le masque
-                        std::cout<<x<<std::endl;
                         extendedMask(i, y) = 255;
                     }
                 }
