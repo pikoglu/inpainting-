@@ -27,27 +27,18 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) 
     std::vector<Node> v;
     int index=0;
 
-
-
-
+    // We brp
     for (int y=patchsize/2;y<imageMask.height()-patchsize/2;y+=patchsize/2){
-    for (int x=patchsize/2;x<imageMask.width()-patchsize/2;x+=patchsize/2){//attention aux nombres paires
-
-
+        for (int x=patchsize/2;x<imageMask.width()-patchsize/2;x+=patchsize/2){
 
              if (imageMask(x,y)>128){
                 Point p(x,y);
 
                 Node n(index,p,lmax);
                 index++;
-                //std::cout<<"index: "<<index<<std::endl;
-                //std::cout<<"x: "<<x<<std::endl;
-                //std::cout<<"y: "<<y<<std::endl;
                 v.push_back(n);
 
                 //is there an already existing neighbors at the left ???
-
-
                 for (size_t i=0; i<v.size();i++){
                     if (v[i].getx()==x-patchsize/2 && v[i].gety()==y){
 
@@ -629,6 +620,7 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage){
     Image imageReconstructed=inputImage.clone();
     for (size_t i = InitialPriority.size(); i-- > 0; ) {//cor
+    //for (size_t i =0;i<InitialPriority.size(); i++ ) {
         if (true){//InitialPriority[i].size()>1){
         Point p=InitialPriority[i].point();
 
@@ -640,7 +632,7 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
                 imageReconstructed(p.first+x,p.second+y,1)=inputImage(lp.first+x,lp.second+y,1);
                 imageReconstructed(p.first+x,p.second+y,2)=inputImage(lp.first+x,lp.second+y,2);
 
-                imageReconstructed(lp.first+x,lp.second+y,0)=255;
+                // imageReconstructed(lp.first+x,lp.second+y,0)=120;
 
 
 
@@ -755,6 +747,34 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
 
 
+Image labelRepartition(const std::vector<Node>& priority,int lmax){
+    int widthBar=10;
+    Image labelRepartition(lmax*widthBar,lmax,1);
+    //set labelRepartition to white
+    for (int x=0;x<labelRepartition.width();x++){
+        for (int y=0;y<labelRepartition.width();y++){
+            labelRepartition(x,y)=0;
+
+        }
+    }
+
+    int sizes[lmax];
+    for (int i=0;i<lmax;i++){
+        sizes[i]=0;
+    }
+    for (size_t i=0;i<priority.size();i++){
+        sizes[priority[i].size()]+=1;
+    }
+    for (int i=0;i<lmax;i++){
+        for (int j=0;j<sizes[i];j++){
+            for (int x=i*widthBar;x<(i+1)*widthBar;x++){
+                labelRepartition(x,j,0)=255;
+            }
+
+        }
+    }
+    return labelRepartition;
+}
 
 
 

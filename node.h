@@ -167,3 +167,6 @@ Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &i
 Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
 
 size_t getNodeOfIndex(const std::vector<Node>& InitialPriority, int j);
+
+
+Image labelRepartition(const std::vector<Node>& priority,int lmax);

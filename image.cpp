@@ -31,13 +31,13 @@ Image::Image()
 
 /// Constructor
 Image::Image(int width, int height, int channels)
-    : count(new int(1)), tab(new float[width*height*channels]),
+    : count(new int(1)), tab(new int[width*height*channels]),
     w(width), h(height), c(channels) {}
 
 /// Constructor with array of pixels.
 ///
 /// Make sure it is not deleted during the lifetime of the image.
-Image::Image(float* pix, int width, int height, int channels)
+Image::Image(int* pix, int width, int height, int channels)
     : count(0), tab(pix), w(width), h(height), c(channels) {}
 
 /// Copy constructor (shallow copy)
@@ -79,7 +79,7 @@ Image Image::gray() const {
         return *this;
     assert(channels() == 3);
     Image out(w,h);
-    const float* in = tab;
+    const int* in = tab;
     for(int y=0; y<h; y++)
         for(int x=0; x<w; x++, in+=3)
             out(x,y) = rgb_to_gray(in[0], in[1], in[2]);
@@ -114,8 +114,8 @@ int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size)
 
     for (int y = -half_patch; y <= half_patch; y++) {
         for (int x = -half_patch; x <= half_patch; x++) {
-            for (int channel = 0; channel < c; channel++) {
-                if (mask(point1.first + x,point1.second + y)<128){
+            if (mask(point1.first + x,point1.second + y)<128){
+                for (int channel = 0; channel < c; channel++) {
                     int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
                     sum += diff * diff;}
             }

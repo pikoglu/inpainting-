@@ -36,13 +36,13 @@ typedef std::vector<Belief> ConfusionSet;
 /// The channels of a color image are interlaced, meaning RGBRGB...
 class Image {
     int* count; ///< number of shallow copies
-    float* tab; ///< array of pixels
+    int* tab; ///< array of pixels
     int w, h, c; ///< width, height, channels
     void kill();
 public:
     Image();
     Image(int width, int height, int channels=1);
-    Image(float* pix, int width, int height, int channels=1);
+    Image(int* pix, int width, int height, int channels=1);
     Image(const Image& I);
     ~Image() { kill(); }
     Image& operator=(const Image& I);
@@ -51,8 +51,8 @@ public:
     int width() const { return w; }
     int height() const { return h; }
     int channels() const { return c; }
-    float  operator()(int i,int j,int d=0) const { return tab[(j*w+i)*c+d]; }
-    float& operator()(int i,int j,int d=0)       { return tab[(j*w+i)*c+d]; }
+    int  operator()(int i,int j,int d=0) const { return tab[(j*w+i)*c+d]; }
+    int& operator()(int i,int j,int d=0)       { return tab[(j*w+i)*c+d]; }
     Image gray() const;
 
     //Felix
