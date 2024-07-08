@@ -54,11 +54,11 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchRadius=11;
-    int lmin=5;
-    int lmax=30;
-    int thresholdConfusion =-patchRadius*patchRadius*500;//à diminuer
-    int thresholdSimilarity=patchRadius*patchRadius*300;//à diminuer
+    int patchSize=15;
+    int lmin=10;
+    int lmax=100;
+    int thresholdConfusion =-patchSize*patchSize*2000;//à diminuer
+    int thresholdSimilarity=patchSize*patchSize*1500;//à diminuer
 
 
 
@@ -70,16 +70,16 @@ int main(int argc, char *argv[]) {
 
     //The mask is located in argv[1]+'/mask_baseball.png'
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
-    Image imageMaskTemp=loadImage(maskPath.c_str());
+    Image imageMask=loadImage(maskPath.c_str());
 
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(90,150,5,5);
+    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(163,95,209,161);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
 
-    Image imageExtendedMask=imageMask.gray().extendMask(patchRadius);
+    Image imageExtendedMask=imageMask.gray().extendMask(patchSize);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageExtendedMask.png").c_str(), imageExtendedMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 
     Image confusionSet=imageInput.clone();
 
-    std::vector<Node> v=nodesOverMask(imageExtendedMask,patchRadius,lmax);
+    std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
 
 
 
@@ -103,19 +103,10 @@ int main(int argc, char *argv[]) {
 
 
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
-                                                         patchRadius,lmin,lmax,thresholdConfusion,thresholdSimilarity);
+                                                         patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
 
-    for (size_t i=0;i<v.size();i++){
-        Node nodeCandidate=priorities[getNodeOfIndex(priorities,i)];
-        if (nodeCandidate.size()==0) continue;
-        Image candidates=visualizeCandidate(priorities,imageInput,patchRadius,i);
-        std::string name=std::string(std::string(argv[1]) + "/candidates/x"+std::to_string(nodeCandidate.getx())+"y"+std::to_string(nodeCandidate.gety())+"i"+std::to_string(nodeCandidate.getIndex())+".png");
-        if (!save_image(name.c_str(),candidates)){
-            std::cerr << "Error writing file "+name << std::endl;
-            return 1;
-        }
-    }
+
 
     Image firstLabelRepartition=labelRepartition(priorities,lmax);
     if(! save_image(std::string(std::string(argv[1]) + "/firstLabelRepartition.png").c_str(), firstLabelRepartition)) {
@@ -141,8 +132,8 @@ int main(int argc, char *argv[]) {
         int y=priorities[i].gety();
         int size=priorities[i].size();
         if (size==0){
-            for (int xp=x-patchRadius;xp<=x+patchRadius;xp++){
-                for (int yp=y-patchRadius;yp<=y+patchRadius;yp++){
+            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
+                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
                     confusionSet(xp,yp,0)=0;
                     confusionSet(xp,yp,1)=255;
                     confusionSet(xp,yp,2)=0;
@@ -151,8 +142,8 @@ int main(int argc, char *argv[]) {
         }
 
         else{
-            for (int xp=x-patchRadius;xp<=x+patchRadius;xp++){
-                for (int yp=y-patchRadius;yp<=y+patchRadius;yp++){
+            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
+                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
                     confusionSet(xp,yp,0)=255-255/lmax*size;
                     confusionSet(xp,yp,1)=0;
                     confusionSet(xp,yp,2)=0;
@@ -163,13 +154,13 @@ int main(int argc, char *argv[]) {
     }
     Image orderOfVisit;
 
-    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,orderOfVisit,patchRadius,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
     if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchRadius,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
     Image secondLabelRepartition=labelRepartition(priorities,lmax);
     if(! save_image(std::string(std::string(argv[1]) + "/secondLabelRepartition.png").c_str(), secondLabelRepartition)) {
@@ -197,10 +188,19 @@ int main(int argc, char *argv[]) {
 
 
 
+    for (size_t i=0;i<v.size();i++){
+        Node nodeCandidate=priorities[getNodeOfIndex(priorities,i)];
+        if (nodeCandidate.size()==0) continue;
+        Image candidates=visualizeCandidate(priorities,imageInput,patchSize,i);
+        std::string name=std::string(std::string(argv[1]) + "/candidates/x"+std::to_string(nodeCandidate.getx())+"y"+std::to_string(nodeCandidate.gety())+"i"+std::to_string(nodeCandidate.getIndex())+".png");
+        if (!save_image(name.c_str(),candidates)){
+            std::cerr << "Error writing file "+name << std::endl;
+            return 1;
+        }
+    }
 
 
-
-    Image reconstructed=imageReconstructed(priorities,patchRadius,imageInput,imageMask);
+    Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
 
 
 
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchRadius);
+    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
 
     // Utile pour enregistrer l'image
     if(! save_image(std::string(std::string(argv[1]) + "/nodes_and_vertices.png").c_str(), nodesAndVertices)){
@@ -240,15 +240,15 @@ int main(int argc, char *argv[]) {
 
 
 
-    //int* centers=im1.listPatchCenters(patchRadius);
+    //int* centers=im1.listPatchCenters(patchSize);
     //std::cout<<(centers[1])<<std::endl;
 
 
 
 
 
-    //int ip=im1.getPatchIndexFromCoordinates(200,200,patchRadius);
-    //Image ssdImage = im1.createSSDImage(patchRadius,ip);
+    //int ip=im1.getPatchIndexFromCoordinates(200,200,patchSize);
+    //Image ssdImage = im1.createSSDImage(patchSize,ip);
 
 
     /*
@@ -259,8 +259,8 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    //ip=im1.getPatchIndexFromCoordinates(50,50,patchRadius);
-    //ssdImage = im1.createSSDImage(patchRadius,ip);
+    //ip=im1.getPatchIndexFromCoordinates(50,50,patchSize);
+    //ssdImage = im1.createSSDImage(patchSize,ip);
     /*
     // Utile pour enregistrer l'image
     if(! save_image("/Users/felixfourreau/Desktop/projet_vacances/images/ssd_ppd2.png", ssdImage)) {

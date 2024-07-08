@@ -51,8 +51,8 @@ public:
     int width() const { return w; }
     int height() const { return h; }
     int channels() const { return c; }
-    int  operator()(int i,int j,int d=0) const { return tab[(j*w+i)*c+d]; }
-    int& operator()(int i,int j,int d=0)       { return tab[(j*w+i)*c+d]; }
+    int  operator()(int i,int j,int d) const { return tab[(j*w+i)*c+d]; }
+    int& operator()(int i,int j,int d)       { return tab[(j*w+i)*c+d]; }
     Image gray() const;
 
     //Felix
@@ -74,7 +74,7 @@ public:
 
     bool isPatchInsideMask(Point patchPoint , int patchSize) const;
 
-    Image simplifyMaskToOnePixel(int x,int y,int taillex,int tailley)const;
+    Image simplifyMaskToOnePixel(int x1,int y1,int x2,int y2)const;
 
 
 

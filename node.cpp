@@ -31,7 +31,7 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) 
     for (int y=patchsize/2;y<imageMask.height()-patchsize/2;y+=patchsize/2){
         for (int x=patchsize/2;x<imageMask.width()-patchsize/2;x+=patchsize/2){
 
-             if (imageMask(x,y)>128){
+             if (imageMask(x,y,0)>128){
                 Point p(x,y);
 
                 Node n(index,p,lmax);
@@ -238,7 +238,7 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
 
 
 
-                if (imageMaskExtended(x,y)<128){ //black pixel ==> possible label candidate
+                if (imageMaskExtended(x,y,0)<128){ //black pixel ==> possible label candidate
 
 
                     Point labelPoint(x,y);
@@ -381,7 +381,7 @@ void Node::createNodeConfusionSet(const Node &sender, const Image &imageMaskExte
     for (int x=patchSize/2;x<imageMaskExtended.width()-patchSize/2;x++) {
         for (int y=patchSize/2;y<imageMaskExtended.height()-patchSize/2;y++){
 
-            if (imageMaskExtended(x,y)<128){ //black pixel ==> possible label candidate
+            if (imageMaskExtended(x,y,0)<128){ //black pixel ==> possible label candidate
 
                 Point labelPoint(x,y);
                 Label currentLabel(labelPoint,0);
@@ -753,7 +753,7 @@ Image labelRepartition(const std::vector<Node>& priority,int lmax){
     //set labelRepartition to white
     for (int x=0;x<labelRepartition.width();x++){
         for (int y=0;y<labelRepartition.width();y++){
-            labelRepartition(x,y)=0;
+            labelRepartition(x,y,0)=0;
 
         }
     }
