@@ -82,15 +82,15 @@ bool Node::similarityCondition(const Image &imageInput, const Point &pointLabel,
 }
 
 void Node::pushConditioned(const Image &imageInput,const Label& label,int lmin,int lmax,int thresholdSimilarity,int patchSize) {
-    if (nodeConfusionSet.size()<lmax){
+    if (nodeConfusionSet.size()<lmin){
         nodeConfusionSet.push_back(label);
-        if (nodeConfusionSet.size()==lmax) std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),sortArgbelief);
+        if (nodeConfusionSet.size()==lmin) std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),sortArgbelief);
 
     }
     else{
         if (label.belief()>nodeConfusionSet.back().belief() && (*this).similarityCondition(imageInput,label.point(),thresholdSimilarity,patchSize) ){
 
-            nodeConfusionSet.pop_back();
+            if (nodeConfusionSet.size()==lmax) nodeConfusionSet.pop_back();
 
             if (label.belief()<=nodeConfusionSet.back().belief()){
                 nodeConfusionSet.push_back(label);
@@ -147,7 +147,16 @@ int Node::worstBelief(){
     return nodeConfusionSet.back().belief() ;}
 
 Image visualiseNodesAndVertices(Image const &imageMask, std::vector<Node> v,int patchsize) {
-    Image nodesAndVertices(imageMask.clone());
+    Image nodesAndVertices(imageMask.width(),imageMask.height(),3);
+
+    for(int x=0;x<imageMask.width();x++){
+        for(int y=0;y<imageMask.height();y++){
+            nodesAndVertices(x,y,0)=imageMask(x,y,0);
+            nodesAndVertices(x,y,1)=imageMask(x,y,0);
+            nodesAndVertices(x,y,2)=imageMask(x,y,0);
+        }
+    }
+
 
     for (size_t i=0; i<v.size();i++){
         Node n=v[i];

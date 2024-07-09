@@ -495,13 +495,11 @@ Image Image::simplifyMaskToOnePixel(int x1, int y1, int x2, int y2)const{
     assert(x1<x2);
     assert(y1<y2);
 
-    Image simplifiedMask=(*this).clone();
+    Image simplifiedMask( (*this).width(),(*this).height(),1);
 
     for (size_t x=0;x<(*this).width();x++){
         for (size_t y=0;y<(*this).height();y++){
             simplifiedMask(x,y,0)=0;
-            simplifiedMask(x,y,1)=0;
-            simplifiedMask(x,y,2)=0;
 
         }
     }
@@ -509,8 +507,6 @@ Image Image::simplifyMaskToOnePixel(int x1, int y1, int x2, int y2)const{
     for (size_t xp=x1;xp<x2;xp++){
         for (size_t yp=y1;yp<y2;yp++){
             simplifiedMask(xp,yp,0)=255;
-            simplifiedMask(xp,yp,1)=255;
-            simplifiedMask(xp,yp,2)=255;
 
         }
     }

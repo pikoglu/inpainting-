@@ -55,10 +55,10 @@ int main(int argc, char *argv[]) {
     }
 
     int patchSize=15;
-    int lmin=10;
-    int lmax=100;
-    int thresholdConfusion =-patchSize*patchSize*2000;//à diminuer
-    int thresholdSimilarity=patchSize*patchSize*1500;//à diminuer
+    int lmin=3;
+    int lmax=20;
+    int thresholdConfusion =-patchSize*patchSize*900;//à diminuer
+    int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
 
 
 
@@ -70,9 +70,9 @@ int main(int argc, char *argv[]) {
 
     //The mask is located in argv[1]+'/mask_baseball.png'
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
-    Image imageMask=loadImage(maskPath.c_str());
+    Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(163,95,209,161);
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(163,95,209,161);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -108,11 +108,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    Image firstLabelRepartition=labelRepartition(priorities,lmax);
-    if(! save_image(std::string(std::string(argv[1]) + "/firstLabelRepartition.png").c_str(), firstLabelRepartition)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
+
 
     int pruned=0;
     int non_pruned=0;
@@ -162,11 +158,7 @@ int main(int argc, char *argv[]) {
     }
     orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
-    Image secondLabelRepartition=labelRepartition(priorities,lmax);
-    if(! save_image(std::string(std::string(argv[1]) + "/secondLabelRepartition.png").c_str(), secondLabelRepartition)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
+
 
     non_pruned=0;
     float averageSize=0.0;
