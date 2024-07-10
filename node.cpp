@@ -82,22 +82,26 @@ bool Node::similarityCondition(const Image &imageInput, const Point &pointLabel,
 }
 
 void Node::pushConditioned(const Image &imageInput,const Label& label,int lmin,int lmax,int thresholdSimilarity,int patchSize) {
+    //If the min size is not yet reached we add labels to the confusion set no matter what
     if (nodeConfusionSet.size()<lmin){
         nodeConfusionSet.push_back(label);
-        if (nodeConfusionSet.size()==lmin) std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),sortArgbelief);
 
     }
     else{
-        if (label.belief()>nodeConfusionSet.back().belief() && (*this).similarityCondition(imageInput,label.point(),thresholdSimilarity,patchSize) ){
+        //If the max size is not yet reached we add label is they are not too similar to the already existing
+        if (nodeConfusionSet.size()<lmax && (*this).similarityCondition(imageInput,label.point(),thresholdSimilarity,patchSize)){
+            nodeConfusionSet.push_back(label);
+            if (nodeConfusionSet.size()==lmax) std::sort(nodeConfusionSet.begin(),nodeConfusionSet.end(),sortArgbelief);
+        }
+        //is the max size if reached we add label if they are more believable than the worst label and not too similar to the already existing
+        else if (label.belief()>nodeConfusionSet.back().belief() && (*this).similarityCondition(imageInput,label.point(),thresholdSimilarity,patchSize) ){
 
-            if (nodeConfusionSet.size()==lmax) nodeConfusionSet.pop_back();
+            nodeConfusionSet.pop_back();
 
             if (label.belief()<=nodeConfusionSet.back().belief()){
                 nodeConfusionSet.push_back(label);
             }
             else{
-
-                //can be improved by inverse browsing
                 for (size_t i=0;i<nodeConfusionSet.size();i++){
                     if (nodeConfusionSet[i].belief()<label.belief()){
                         nodeConfusionSet.insert(nodeConfusionSet.begin()+i,label);
@@ -204,6 +208,21 @@ Image visualiseNodesAndVertices(Image const &imageMask, std::vector<Node> v,int 
         }
     }
     return nodesAndVertices;
+}
+
+
+Image visualiseMaskOverImage(Image const &imageInput,Image const &imageMask) {
+    Image maskOverImage(imageInput.clone());
+    for (int x=0;x<imageMask.width();x++){
+        for (int y=0;y<imageMask.height();y++){
+            if (imageMask(x,y,0)>128){
+                maskOverImage(x,y,0)=255;
+                maskOverImage(x,y,1)=255;
+                maskOverImage(x,y,2)=255;
+            }
+        }
+    }
+    return maskOverImage;
 }
 
 bool sortArgSize(const Node &a,const Node &b){
@@ -787,4 +806,52 @@ Image labelRepartition(const std::vector<Node>& priority,int lmax){
 
 
 
+void pourcentageNoeudPruned(const std::vector<Node>& priorities,int lmax,int lmin){
+    int pruned=0;
+    int non_pruned=0;
 
+    for (size_t i=0;i<priorities.size();i++){
+        if (priorities[i].size()<lmax && priorities[i].size()>=lmin){pruned++;}
+        if (priorities[i].size()>1){
+            non_pruned++;
+
+        }
+    }
+
+    std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
+
+
+}
+
+
+Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInput,int patchSize,int lmax){
+    Image confusionSet(imageInput.clone());
+
+    for (size_t i=0;i<priorities.size();i++){
+        int x=priorities[i].getx();
+        int y=priorities[i].gety();
+        int size=priorities[i].size();
+        if (size==0){
+            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
+                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
+                    confusionSet(xp,yp,0)=0;
+                    confusionSet(xp,yp,1)=255;
+                    confusionSet(xp,yp,2)=0;
+                }
+            }
+        }
+
+        else{
+            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
+                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
+                    confusionSet(xp,yp,0)=255-255/lmax*size;
+                    confusionSet(xp,yp,1)=0;
+                    confusionSet(xp,yp,2)=0;
+                }
+            }
+        }
+
+    }
+    return confusionSet;
+
+}

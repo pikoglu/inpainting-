@@ -332,11 +332,14 @@ Image Image::extendMask(int patchsize)const { // a changer c'est patchsize/2
 
 bool Image::isPatchInsideMask(Point patchPoint , int patchSize) const{
     //to be called on mask
+    /*
     for (int x=patchPoint.first-patchSize/2;x<=patchPoint.first+patchSize/2;x++){
         for (int y=patchPoint.second-patchSize/2;y<=patchPoint.second+patchSize/2;y++){
             if ((*this)(x,y,0)<128){return false;} //black pixels ==> patch not entirely inside mask
         }
-    }
+    }*/
+
+    if ((*this)(patchPoint.first,patchPoint.second,0)<128){return false;}
     return true;
 
 

@@ -170,3 +170,11 @@ size_t getNodeOfIndex(const std::vector<Node>& InitialPriority, int j);
 
 
 Image labelRepartition(const std::vector<Node>& priority,int lmax);
+
+
+Image visualiseMaskOverImage(Image const &imageInput,Image const &imageMask);
+
+
+void pourcentageNoeudPruned(const std::vector<Node>& priorities,int lmax,int lmin);
+
+Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInput,int patchSize,int lmax);

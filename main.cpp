@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     int patchSize=15;
     int lmin=3;
     int lmax=20;
-    int thresholdConfusion =-patchSize*patchSize*900;//à diminuer
+    int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
 
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(163,95,209,161);
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,95,210,161);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -88,9 +88,15 @@ int main(int argc, char *argv[]) {
 
 
 
-    Image confusionSet=imageInput.clone();
 
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
+
+    Image maskOverImage= visualiseMaskOverImage(imageInput,imageMask);
+
+    if(! save_image(std::string(std::string(argv[1]) + "/maskOverImage.png").c_str(), maskOverImage)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
 
 
@@ -106,78 +112,14 @@ int main(int argc, char *argv[]) {
                                                          patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
 
 
+    Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
 
-
-
-
-    int pruned=0;
-    int non_pruned=0;
-
-    for (size_t i=0;i<priorities.size();i++){
-        if (priorities[i].size()<lmax && priorities[i].size()>=lmin){pruned++;}
-        if (priorities[i].size()>1){
-            non_pruned++;
-
-        }
-    }
-
-    std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
-
-    for (size_t i=0;i<priorities.size();i++){
-        int x=priorities[i].getx();
-        int y=priorities[i].gety();
-        int size=priorities[i].size();
-        if (size==0){
-            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
-                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
-                    confusionSet(xp,yp,0)=0;
-                    confusionSet(xp,yp,1)=255;
-                    confusionSet(xp,yp,2)=0;
-                }
-            }
-        }
-
-        else{
-            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
-                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
-                    confusionSet(xp,yp,0)=255-255/lmax*size;
-                    confusionSet(xp,yp,1)=0;
-                    confusionSet(xp,yp,2)=0;
-                }
-            }
-        }
-
-    }
-    Image orderOfVisit;
-
-    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
-
-    if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
+    if(! save_image(std::string(std::string(argv[1]) + "/confusionSet.png").c_str(), confusionSet)){
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
 
-
-
-    non_pruned=0;
-    float averageSize=0.0;
-    pruned=0;
-    for (size_t i=0;i<priorities.size();i++){
-        if (priorities[i].size()<lmax && priorities[i].size()>=lmin){
-            pruned++;
-            averageSize+=float(priorities[i].size())/float(priorities.size());}
-
-        if (priorities[i].size()>1){
-            non_pruned++;
-
-        }
-    }
-    std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
-    std::cout<<"average size : "<<averageSize<<std::endl;
-
-
-
+    pourcentageNoeudPruned(priorities,lmax,lmin);
 
 
     for (size_t i=0;i<v.size();i++){
@@ -190,6 +132,32 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
+
+
+
+    Image orderOfVisit;
+
+    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+
+
+    pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+    if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+
+
+    pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+
+
+
+
+
 
 
     Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
@@ -208,10 +176,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if(! save_image(std::string(std::string(argv[1]) + "/confusion_set.png").c_str(), confusionSet)){
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
+
 
 
 
