@@ -889,8 +889,8 @@ Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInpu
         int y=priorities[i].gety();
         int size=priorities[i].size();
         if (size==0){
-            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
-                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
+            for (int xp=x-patchSize/2;xp<=x+patchSize/2;xp++){
+                for (int yp=y-patchSize/2;yp<=y+patchSize/2;yp++){
                     confusionSet(xp,yp,0)=0;
                     confusionSet(xp,yp,1)=255;
                     confusionSet(xp,yp,2)=0;
@@ -898,9 +898,16 @@ Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInpu
             }
         }
 
-        else{
-            for (int xp=x-patchSize;xp<=x+patchSize;xp++){
-                for (int yp=y-patchSize;yp<=y+patchSize;yp++){
+    }
+
+    for (size_t i=0;i<priorities.size();i++){
+        int x=priorities[i].getx();
+        int y=priorities[i].gety();
+        int size=priorities[i].size();
+
+        if (size>0){
+            for (int xp=x-patchSize/2;xp<=x+patchSize/2;xp++){
+                for (int yp=y-patchSize/2;yp<=y+patchSize/2;yp++){
                     confusionSet(xp,yp,0)=255-255/lmax*size;
                     confusionSet(xp,yp,1)=0;
                     confusionSet(xp,yp,2)=0;

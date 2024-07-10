@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchSize=15;
+    int patchSize=31;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
@@ -72,7 +72,8 @@ int main(int argc, char *argv[]) {
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,95,210,161);
+    Image imageMask(imageMaskTemp.gray().clone());
+    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,95,210,161);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -100,6 +101,14 @@ int main(int argc, char *argv[]) {
 
 
 
+    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
+
+    // Utile pour enregistrer l'image
+    if(! save_image(std::string(std::string(argv[1]) + "/nodesAndVertices.png").c_str(), nodesAndVertices)){
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
+
 
 
 
@@ -110,6 +119,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
                                                          patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
+
 
 
     Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
@@ -168,14 +178,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
-
-    // Utile pour enregistrer l'image
-    if(! save_image(std::string(std::string(argv[1]) + "/nodes_and_vertices.png").c_str(), nodesAndVertices)){
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
 
 
 
