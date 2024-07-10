@@ -504,7 +504,58 @@ void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExte
     (*this).pruningThresholdConfusion(thresholdConfusion,lmin);
 
 
+}
+
+
+
+void Node::updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+    assert((*this).size()>0);
+    if ((*this).size()<lmin){
+        std::cout<<"updateNodeConfusionSet"<<std::endl;
+        assert((*this).size()>=lmin);
     }
+    assert(sender.size()>0);
+    if (sender.size()<lmin){
+        std::cout<<"updateNodeConfusionSet"<<std::endl;
+        assert(sender.size()>=lmin);
+    }
+    std::vector<Label> & receiverNodeConfusionSet=this->getNodeConfusionSet();
+
+    for (size_t i=0;i<(*this).size();i++) {
+
+        Point labelPoint(receiverNodeConfusionSet[i].point());
+        double messageFromSender=(*this).messageReceived(sender,labelPoint,imageInput,patchSize);
+
+        if (messageFromSender<0){
+            std::cout<<messageFromSender<<std::endl;
+            assert(messageFromSender>=0);
+        }
+        if (sender.point().first>(*this).point().first){//Message from the right
+            //std::cout<<"avant"<<this->getNodeConfusionSet()[i].getMessageFromRight()<<std::endl;
+            receiverNodeConfusionSet[i].setMessageFromRight(messageFromSender);//pos potential left right top botom
+            //std::cout<<"apres"<<this->getNodeConfusionSet()[i].getMessageFromRight()<<std::endl;
+        }
+        else if(sender.point().first<(*this).point().first){//Message from the left
+            receiverNodeConfusionSet[i].setMessageFromLeft(messageFromSender);
+        }
+        else if(sender.point().second>(*this).point().second){//Message from the top
+            receiverNodeConfusionSet[i].setMessageFromTop(messageFromSender);
+        }
+        else if (sender.point().second<(*this).point().second) {//Message from the bottom
+            receiverNodeConfusionSet[i].setMessageFromBottom(messageFromSender);
+        }
+        else{
+            std::cout<<"message not from neighbor updateNodeConfusionSet"<<std::endl;
+        }
+
+    }
+    std::sort(receiverNodeConfusionSet.begin(),receiverNodeConfusionSet.end(),sortArgbelief);
+
+
+}
+
+
+
 
 void updatePriority(size_t index, std::vector<Node> &InitialPriority) {
     if (index >= InitialPriority.size()) {
@@ -737,8 +788,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
             int indexLeftNeighbor = getNodeOfIndex(InitialPriority, currentNode.getLeftNeighbor());
 
-
-            InitialPriority[indexLeftNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            //No pruning in backward pass cf article
+            InitialPriority[indexLeftNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
 
         }
 
@@ -746,7 +797,7 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
             int indexRightNeighbor = getNodeOfIndex(InitialPriority, currentNode.getRightNeighbor());
 
 
-            InitialPriority[indexRightNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            InitialPriority[indexRightNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
 
         }
 
@@ -755,7 +806,7 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
 
 
-                InitialPriority[indexTopNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexTopNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
 
         }
 
@@ -764,7 +815,7 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
 
 
-                InitialPriority[indexBottomNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexBottomNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
 
         }
         std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
@@ -807,18 +858,24 @@ Image labelRepartition(const std::vector<Node>& priority,int lmax){
 
 
 void pourcentageNoeudPruned(const std::vector<Node>& priorities,int lmax,int lmin){
-    int pruned=0;
-    int non_pruned=0;
+    float pruned=0.0;
+    float non_pruned=0.0;
+
+    float tailleMoyenne=0.0;
 
     for (size_t i=0;i<priorities.size();i++){
-        if (priorities[i].size()<lmax && priorities[i].size()>=lmin){pruned++;}
-        if (priorities[i].size()>1){
+        if (priorities[i].size()<lmax && priorities[i].size()>=lmin){
+            pruned++;}
+        if (priorities[i].size()>0){
+            tailleMoyenne+=priorities[i].size();
             non_pruned++;
 
         }
     }
 
+
     std::cout<<"pourcentage de noeud pruned : "<<float(pruned)/float(non_pruned)<<std::endl;
+    std::cout<<"taille moyenne non vide : "<<float(tailleMoyenne)/float(non_pruned)<<std::endl;
 
 
 }
