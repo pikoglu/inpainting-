@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchSize=31;
+    int patchSize=17;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    Image imageMask(imageMaskTemp.gray().clone());
-    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,95,210,161);
+    //Image imageMask(imageMaskTemp.gray().clone());
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,95,163,96);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
 
 
     std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
-                                                         patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity);
+                                                         patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity,argv[1]);
 
 
 
@@ -132,22 +132,14 @@ int main(int argc, char *argv[]) {
     pourcentageNoeudPruned(priorities,lmax,lmin);
 
 
-    for (size_t i=0;i<v.size();i++){
-        Node nodeCandidate=priorities[getNodeOfIndex(priorities,i)];
-        if (nodeCandidate.size()==0) continue;
-        Image candidates=visualizeCandidate(priorities,imageInput,patchSize,i);
-        std::string name=std::string(std::string(argv[1]) + "/candidates/x"+std::to_string(nodeCandidate.getx())+"y"+std::to_string(nodeCandidate.gety())+"i"+std::to_string(nodeCandidate.getIndex())+".png");
-        if (!save_image(name.c_str(),candidates)){
-            std::cerr << "Error writing file "+name << std::endl;
-            return 1;
-        }
-    }
+
 
 
 
     Image orderOfVisit;
 
-    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                                               orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1]);
 
 
     pourcentageNoeudPruned(priorities,lmax,lmin);
@@ -157,7 +149,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax);
+    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1]);
+
 
 
     pourcentageNoeudPruned(priorities,lmax,lmin);

@@ -125,10 +125,10 @@ public:
 
     bool inStack(const std::vector<int> &stack);
 
-    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int pruningThresholdConfusion,int lmin,int lmax);
+    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
     double messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
-    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int pruningThresholdConfusion,int lmin,int lmax);
-    void updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
+    void updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax,std::string path,int s);
 
 
     void normalizeMessage();
@@ -153,20 +153,20 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax);
 Image visualiseNodesAndVertices(Image const &imageMask, std::vector<Node> v,int patchsize) ;
 
 
-std::vector<Node> assignInitialPriority( const Image& inputImage,const Image& maskExtended,const Image& mask,
-                                                       int patchSize, int Lmin, int Lmax,
-                                                       int thresholdConfusion, int thresholdSimilarity) ;
+std::vector<Node> assignInitialPriority(const Image& inputImage, const Image& maskExtended, const Image& mask,
+                                        int patchSize, int Lmin, int Lmax,
+                                        int thresholdConfusion, int thresholdSimilarity, std::string path) ;
 
 
 
-std::vector<int> forwardPass(std::vector<Node> &InitialPriority,const Image &imageInput, const Image &imageMaskExtended,Image &orderOfPassage,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput, const Image &imageMaskExtended, Image &orderOfPassage, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path);
 
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
 
-Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &imageInput,int patchSize, int index);
+Image visualizeCandidate(const Node nodeCandidate,const Image &imageInput,int patchSize);
 
-Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax);
+Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax,std::string path);
 
 size_t getNodeOfIndex(const std::vector<Node>& InitialPriority, int j);
 
@@ -180,3 +180,6 @@ Image visualiseMaskOverImage(Image const &imageInput,Image const &imageMask);
 void pourcentageNoeudPruned(const std::vector<Node>& priorities,int lmax,int lmin);
 
 Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInput,int patchSize,int lmax);
+
+void saveNodeCandidate(const Node & nodeCandidate,const Image& imageInput,
+                       int patchSize, std::string path,int r,int s,int m);

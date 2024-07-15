@@ -231,9 +231,27 @@ bool sortArgSize(const Node &a,const Node &b){
     return a.size()<b.size();
 }
 
+void saveNodeCandidate(const Node & nodeCandidate,const Image& imageInput,
+                       int patchSize, std::string path,int r,int s,int m){
+    if (nodeCandidate.size()>0){
+        Image candidates=visualizeCandidate(nodeCandidate,imageInput,patchSize);
+        std::string name=std::string(path+"/candidates/"+
+                                       std::to_string(r)+"R"+
+                                       std::to_string(s)+"S"+
+                                       std::to_string(nodeCandidate.getIndex())+"I"+
+                                       std::to_string(nodeCandidate.getx())+"X"+
+                                       std::to_string(nodeCandidate.gety())+"Y"+
+                                       std::to_string(m)+"M.png");
+        if (!save_image(name.c_str(),candidates)){
+            std::cerr << "Error writing file "+name << std::endl;
+        }
+    }
+
+}
+
 std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& imageMaskExtended,const Image& imageMask,
                                                        int patchSize, int lmin, int lmax,
-                                                       int thresholdConfusion, int thresholdSimilarity) {
+                                        int thresholdConfusion, int thresholdSimilarity, std::string path) {
 
 
     std::vector<Node> confusionSets=nodesOverMask(imageMaskExtended,patchSize,lmax);
@@ -244,7 +262,6 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
 
     // Iterate over each node
     for (size_t i=0;i<confusionSets.size();i++) {
-        //std::cout<<i<<"<:"<<confusionSets.size()<<std::endl;
 
 
         if (i/100>progression){progression=i/100;std::cout<<progression*100<<"/"<<confusionSets.size()<<std::endl;}
@@ -286,9 +303,11 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
             }
 
         }
-        //we then apply the confusion threshold on the remaining confusionset
+        saveNodeCandidate(confusionSets[i],imageInput,patchSize,path,0,0,-1);
 
         confusionSets[i].pruningThresholdConfusion(thresholdConfusion,lmin);
+
+
         assert(confusionSets[i].size()>=lmin);
         assert(confusionSets[i].size()<=lmax);
         if (confusionSets[i].size()==0){std::cout<<"attention"<<std::endl;}
@@ -397,7 +416,10 @@ double Node::messageReceived(  const Node  &sender, const Point &coordPatchCandi
     return  bestMessage;
 }
 
-void Node::createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+void Node::createNodeConfusionSet(const Node &sender,
+                                  const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,
+                                  int thresholdConfusion,int lmin,int lmax,
+                                  std::string path,int s){
     if (sender.size()<lmin){
         std::cout<<"createNodeConfusionSet"<<std::endl;
         assert(sender.size()>=lmin);
@@ -456,9 +478,13 @@ void Node::createNodeConfusionSet(const Node &sender, const Image &imageMaskExte
 
     (*this).pruningThresholdConfusion(thresholdConfusion,lmin);
 
+    saveNodeCandidate((*this),imageInput,patchSize,path,1,s,sender.getIndex());
+
 }
 
-void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,
+                                  const Image &imageInput,int patchSize,int thresholdSimilarity,
+                                  int thresholdConfusion,int lmin,int lmax,std::string path,int s){
     assert((*this).size()>0);
     if ((*this).size()<lmin){
         std::cout<<"updateNodeConfusionSet"<<std::endl;
@@ -498,17 +524,21 @@ void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExte
                 std::cout<<"message not from neighbor updateNodeConfusionSet"<<std::endl;
             }
 
-        }
+    }
     std::sort(receiverNodeConfusionSet.begin(),receiverNodeConfusionSet.end(),sortArgbelief);
 
     (*this).pruningThresholdConfusion(thresholdConfusion,lmin);
+    saveNodeCandidate(*this,imageInput,patchSize,path,1,s,sender.getIndex());
+
 
 
 }
 
 
 
-void Node::updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+void Node::updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,
+                                           int patchSize,int thresholdSimilarity,int thresholdConfusion,
+                                           int lmin,int lmax,std::string path,int s){
     assert((*this).size()>0);
     if ((*this).size()<lmin){
         std::cout<<"updateNodeConfusionSet"<<std::endl;
@@ -550,6 +580,8 @@ void Node::updateNodeConfusionSetNoPruning(const Node &sender, const Image &imag
 
     }
     std::sort(receiverNodeConfusionSet.begin(),receiverNodeConfusionSet.end(),sortArgbelief);
+    saveNodeCandidate(*this,imageInput,patchSize,path,2,s,sender.getIndex());
+
 
 
 }
@@ -604,7 +636,11 @@ size_t getNodeOfCoord(const std::vector<Node>& InitialPriority, int x,int y) {
     throw std::runtime_error("Node not found");//en ajouter partour
 }
 
-std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput, const Image &imageMaskExtended, Image &orderOfVisit, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax){
+
+std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput,
+                             const Image &imageMaskExtended, Image &orderOfVisit,
+                             int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin,
+                             int lmax, std::string path){
     std::vector<int> commitStack;
     std::vector<bool> commitList=intializeFalseVector(InitialPriority.size());
     orderOfVisit=imageMaskExtended.clone();
@@ -653,20 +689,28 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
 
 
             if (InitialPriority[indexLeftNeighbor].size() == 0) { // interior
-                InitialPriority[indexLeftNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexLeftNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput,
+                                                                          patchSize, thresholdSimilarity, thresholdConfusion,
+                                                                          lmin, lmax,path,time);
             }
             else {
-                InitialPriority[indexLeftNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexLeftNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize,
+                                                                          thresholdSimilarity, thresholdConfusion,
+                                                                          lmin, lmax,path,time);
             }
         }
 
         if (currentNode.hasRightNeighbor() && not commitList[currentNode.getRightNeighbor()]) {
             int indexRightNeighbor = getNodeOfIndex(InitialPriority, currentNode.getRightNeighbor());
             if (InitialPriority[indexRightNeighbor].size() == 0) { // interior
-                InitialPriority[indexRightNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexRightNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize,
+                                                                           thresholdSimilarity, thresholdConfusion,
+                                                                           lmin, lmax,path,time);
             }
             else {
-                InitialPriority[indexRightNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexRightNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize,
+                                                                           thresholdSimilarity, thresholdConfusion,
+                                                                           lmin, lmax,path,time);
             }
         }
 
@@ -674,10 +718,14 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
             int indexTopNeighbor = getNodeOfIndex(InitialPriority, currentNode.getTopNeighbor());
 
             if (InitialPriority[indexTopNeighbor].size() == 0) { // interior
-                InitialPriority[indexTopNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexTopNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize,
+                                                                         thresholdSimilarity, thresholdConfusion,
+                                                                         lmin, lmax,path,time);
             }
             else {
-                InitialPriority[indexTopNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexTopNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput,
+                                                                         patchSize, thresholdSimilarity, thresholdConfusion,
+                                                                         lmin, lmax,path,time);
             }
         }
 
@@ -685,10 +733,14 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
             int indexBottomNeighbor = getNodeOfIndex(InitialPriority, currentNode.getBottomNeighbor());
 
             if (InitialPriority[indexBottomNeighbor].size() == 0) { // interior
-                InitialPriority[indexBottomNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexBottomNeighbor].createNodeConfusionSet(currentNode, imageMaskExtended, imageInput,
+                                                                            patchSize, thresholdSimilarity, thresholdConfusion,
+                                                                            lmin, lmax,path,time);
             }
             else {
-                InitialPriority[indexBottomNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexBottomNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput,
+                                                                            patchSize, thresholdSimilarity, thresholdConfusion,
+                                                                            lmin, lmax,path,time);
             }
         }
         std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
@@ -698,8 +750,9 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage){
     Image imageReconstructed=inputImage.clone();
+
+
     for (size_t i = InitialPriority.size(); i-- > 0; ) {//cor
-    //for (size_t i =0;i<InitialPriority.size(); i++ ) {
         if (true){//InitialPriority[i].size()>1){
         Point p=InitialPriority[i].point();
 
@@ -713,21 +766,37 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
 
                 // imageReconstructed(lp.first+x,lp.second+y,0)=120;
 
-
-
-
             }
         }
     }
 
+    for (size_t i = InitialPriority.size(); i-- > 0; ) {
+        Point p=InitialPriority[i].point();
+        for (int x=-patchSize/2;x<=patchSize/2;x++){
+
+
+                imageReconstructed(p.first+x,p.second,0)=0;
+                imageReconstructed(p.first+x,p.second,1)=255;
+                imageReconstructed(p.first+x, p.second, 2) = 255;
+
+        }
+        for (int y=-patchSize/2;y<=patchSize/2;y++){
+            imageReconstructed(p.first,p.second+y,0)=0;
+            imageReconstructed(p.first,p.second+y,1)=255;
+            imageReconstructed(p.first,p.second+y,2)=255;
+        }
     }
+
+
+    }
+
+
     return imageReconstructed;
 }
 
 
-Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &imageInput,int patchSize, int index){
+Image visualizeCandidate(const Node nodeCandidate,const Image &imageInput,int patchSize){
 
-    Node nodeCandidate=InitialPriority[getNodeOfIndex(InitialPriority,index)];
     int size=nodeCandidate.size();
     Image candidate(size*patchSize,patchSize,3);
     for (int i=0;i<size;i++){
@@ -748,7 +817,8 @@ Image visualizeCandidate(const std::vector<Node> &InitialPriority,const Image &i
 }
 
 
-Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax){
+Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,
+                   int lmin,int lmax,std::string path){
     std::vector<bool> commitList=intializeTrueVector(InitialPriority.size());
     Image orderOfVisit=imageMaskExtended.clone();
     int index;
@@ -789,7 +859,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
             int indexLeftNeighbor = getNodeOfIndex(InitialPriority, currentNode.getLeftNeighbor());
 
             //No pruning in backward pass cf article
-            InitialPriority[indexLeftNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            InitialPriority[indexLeftNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity,
+                                                                               thresholdConfusion, lmin, lmax,path,time);
 
         }
 
@@ -797,7 +868,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
             int indexRightNeighbor = getNodeOfIndex(InitialPriority, currentNode.getRightNeighbor());
 
 
-            InitialPriority[indexRightNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+            InitialPriority[indexRightNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity,
+                                                                                thresholdConfusion, lmin, lmax,path,time);
 
         }
 
@@ -806,7 +878,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
 
 
-                InitialPriority[indexTopNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexTopNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize,
+                                                                              thresholdSimilarity, thresholdConfusion, lmin, lmax,path,time);
 
         }
 
@@ -815,7 +888,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
 
 
 
-                InitialPriority[indexBottomNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput, patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax);
+                InitialPriority[indexBottomNeighbor].updateNodeConfusionSetNoPruning(currentNode, imageMaskExtended, imageInput,
+                                                                                 patchSize, thresholdSimilarity, thresholdConfusion, lmin, lmax,path,time);
 
         }
         std::sort(InitialPriority.begin(),InitialPriority.end(),sortArgSize);
@@ -881,7 +955,8 @@ void pourcentageNoeudPruned(const std::vector<Node>& priorities,int lmax,int lmi
 }
 
 
-Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInput,int patchSize,int lmax){
+Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInput,
+                      int patchSize,int lmax){
     Image confusionSet(imageInput.clone());
 
     for (size_t i=0;i<priorities.size();i++){
@@ -919,3 +994,6 @@ Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInpu
     return confusionSet;
 
 }
+
+
+
