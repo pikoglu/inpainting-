@@ -71,7 +71,7 @@ class Node{
     int rightNeighbor;
     int bottomNeighbor;
 
-    std::vector<Label> nodeConfusionSet; // this isnt entirely equal to the definition of condusionSet in the paper
+    std::vector<std::pair<Label,Point> > nodeConfusionSet; // this isnt entirely equal to the definition of condusionSet in the paper
 
 public:
     Node(int index,Point nodePoint,int lmax);
@@ -92,8 +92,8 @@ public:
     int getIndex()const {return index;}
 
 
-    std::vector<Label>& getNodeConfusionSet() { return nodeConfusionSet; }
-    const std::vector<Label>& getNodeConfusionSet() const { return nodeConfusionSet; }
+    std::vector<std::pair<Label,Point> >& getNodeConfusionSet() { return nodeConfusionSet; }
+    const std::vector<std::pair<Label,Point> >& getNodeConfusionSet() const { return nodeConfusionSet; }
     void addLeftNeighbor(int i){leftNeighbor=i;}
     void addRightNeighbor(int i){rightNeighbor=i;}
     void addTopNeighbor(int i){topNeighbor=i;}
@@ -116,7 +116,7 @@ public:
 
 
 
-    void pushConditioned(const Image &imageInput,const Label& label,int lmin,int lmax,int thresholdSimilarity,int patchSize);
+    bool pushConditioned(const Image &imageInput,const Label& label,int lmin,int lmax,int thresholdSimilarity,int patchSize, Point xq);
 
     Label label(int i)const;
 
@@ -126,7 +126,7 @@ public:
     bool inStack(const std::vector<int> &stack);
 
     void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
-    double messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
+    std::pair<double,Point> messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
     void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
     void updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax,std::string path,int s);
 
