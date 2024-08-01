@@ -99,16 +99,16 @@ public:
     void addTopNeighbor(int i){topNeighbor=i;}
     void addBottomNeighbor(int i){bottomNeighbor=i;}
 
-    bool hasLeftNeighbor() { return leftNeighbor != -1; }
-    bool hasRightNeighbor() { return rightNeighbor != -1; }
-    bool hasTopNeighbor() { return topNeighbor != -1; }
-    bool hasBottomNeighbor() { return bottomNeighbor != -1; }
+    bool hasLeftNeighbor()const { return leftNeighbor != -1; }
+    bool hasRightNeighbor()const { return rightNeighbor != -1; }
+    bool hasTopNeighbor() const{ return topNeighbor != -1; }
+    bool hasBottomNeighbor() const{ return bottomNeighbor != -1; }
 
 
-    int getLeftNeighbor(){return leftNeighbor;}
-    int getRightNeighbor(){return rightNeighbor;}
-    int getTopNeighbor(){return topNeighbor;}
-    int getBottomNeighbor(){return bottomNeighbor;}
+    int getLeftNeighbor()const{return leftNeighbor;}
+    int getRightNeighbor()const{return rightNeighbor;}
+    int getTopNeighbor()const{return topNeighbor;}
+    int getBottomNeighbor()const{return bottomNeighbor;}
 
     int size()const {return int(nodeConfusionSet.size());}
 
@@ -125,10 +125,10 @@ public:
 
     bool inStack(const std::vector<int> &stack);
 
-    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
-    std::pair<double,Point> messageReceived(  const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput,int patchSize);
-    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s);
-    void updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax,std::string path,int s);
+    void createNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s, int w0);
+    std::pair<double,Point> messageReceived(const Node  &sender, const Point &coordPatchCandidate, const Image &imageInput, int patchSize, int w0);
+    void updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int pruningThresholdConfusion, int lmin, int lmax, std::string path, int s, int w0);
+    void updateNodeConfusionSetNoPruning(const Node &sender, const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path, int s, int w0);
 
 
     void normalizeMessage();
@@ -159,14 +159,14 @@ std::vector<Node> assignInitialPriority(const Image& inputImage, const Image& ma
 
 
 
-std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput, const Image &imageMaskExtended, Image &orderOfPassage, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path);
+std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &imageInput, const Image &imageMaskExtended, Image &orderOfPassage, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path, int w0);
 
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
 
 Image visualizeCandidate(const Node nodeCandidate,const Image &imageInput,int patchSize);
 
-Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitStack,const Image &imageInput, const Image &imageMaskExtended,int patchSize,int thresholdSimilarity,int thresholdConfusion,int lmin,int lmax,std::string path);
+Image backwardPass(std::vector<Node> &InitialPriority, std::vector<int> commitStack, const Image &imageInput, const Image &imageMaskExtended, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path, int w0);
 
 size_t getNodeOfIndex(const std::vector<Node>& InitialPriority, int j);
 
@@ -183,3 +183,6 @@ Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInpu
 
 void saveNodeCandidate(const Node & nodeCandidate,const Image& imageInput,
                        int patchSize, std::string path,int r,int s,int m);
+
+
+Image imageReconstructedBlend(const std::vector<Node> &InitialPriority, int patchSize, Image inputImage, Image maskImage, int lmax);

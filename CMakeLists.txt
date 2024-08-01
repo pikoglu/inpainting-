@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(StereoAdpativeWeights)
+project(Inpainting)
 
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
@@ -26,6 +26,7 @@ set(SRC
     image.cpp image.h
     io_png.c io_png.h
     node.cpp node.h
+    fft.cpp fft.h
     main.cpp)
 
 add_executable(bpInpainting ${SRC})

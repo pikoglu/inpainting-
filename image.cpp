@@ -29,10 +29,10 @@
 Image::Image()
     : count(0), tab(0), w(0), h(0), c(0) {}
 
-/// Constructor
 Image::Image(int width, int height, int channels)
     : count(new int(1)), tab(new int[width*height*channels]),
     w(width), h(height), c(channels) {}
+
 
 /// Constructor with array of pixels.
 ///
@@ -447,7 +447,7 @@ std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& 
 }*/
 
 
-double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) const {
+double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize,int w0) const {
     double ssd = 0;
 
     for (int j=0;j<c;j++){
@@ -485,6 +485,10 @@ double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize) 
         else{
             std::cout<<"error std overlap"<<std::endl;
         }
+    }
+
+    if (std::abs(p1.first-p2.first)-patchSize>0 and std::abs(p1.second-p2.second)-patchSize>0){
+        ssd=ssd+w0;
     }
 
 

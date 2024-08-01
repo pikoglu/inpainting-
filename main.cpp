@@ -54,11 +54,12 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchSize=15;
+    int patchSize=41;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
+    int w0=0;//patchSize*patchSize*1;
 
 
 
@@ -72,8 +73,8 @@ int main(int argc, char *argv[]) {
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    //Image imageMask(imageMaskTemp.gray().clone());
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(162,90,210,200);
+    Image imageMask(imageMaskTemp.gray().clone());
+    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(220,42,315,230);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -139,7 +140,8 @@ int main(int argc, char *argv[]) {
     Image orderOfVisit;
 
     std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
-                                               orderOfVisit,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1]);
+                                               orderOfVisit,patchSize,thresholdSimilarity,
+                                               thresholdConfusion,lmin,lmax,argv[1],w0);
 
 
     pourcentageNoeudPruned(priorities,lmax,lmin);
@@ -149,18 +151,14 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1]);
+    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
 
 
 
     pourcentageNoeudPruned(priorities,lmax,lmin);
 
-
-
-
-
-
-
+    Image imageInputCopy=imageInput.clone();
 
 
     Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
@@ -172,6 +170,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+
+    Image reconstructedBlend=imageReconstructedBlend(priorities,patchSize,imageInputCopy,imageMask,lmax);
+
+
+
+    if(! save_image(std::string(std::string(argv[1]) + "/reconstructedBlend.png").c_str(), reconstructedBlend)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
 
 
