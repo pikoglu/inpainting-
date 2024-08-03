@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchSize=41;
+    int patchSize=21;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
@@ -73,8 +73,8 @@ int main(int argc, char *argv[]) {
     std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    Image imageMask(imageMaskTemp.gray().clone());
-    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(220,42,315,230);
+    //Image imageMask(imageMaskTemp.gray().clone());
+    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(350,235,370,245);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;

@@ -23,16 +23,15 @@ Node::Node(int i,Point p,int lmax) {
 
 std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) {
 
-
     //Ne fonctionne que dans le cas impaire
     std::vector<Node> v;
     int index=0;
 
     // We brp
-    for (int y=patchsize/2;y<imageMask.height()-patchsize/2;y+=patchsize/2){
-        for (int x=patchsize/2;x<imageMask.width()-patchsize/2;x+=patchsize/2){
+    for (int y=0;y<imageMask.height()+patchsize/2;y+=patchsize/2){
+        for (int x=0;x<imageMask.width()+patchsize/2;x+=patchsize/2){
 
-             if (imageMask(x,y,0)>128){
+            if (imageMask(x,y,0)>128){
                 Point p(x,y);
 
                 Node n(index,p,lmax);
@@ -61,9 +60,12 @@ std::vector<Node> nodesOverMask(Image const &imageMask,int patchsize, int lmax) 
 
                     }
                 }
-             }
-         }
-    }
+            }
+
+
+            }
+        }
+
 
     return  v;
 }

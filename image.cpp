@@ -113,15 +113,19 @@ int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size)
     int sum = 0;
 
     for (int y = -half_patch; y <= half_patch; y++) {
-        for (int x = -half_patch; x <= half_patch; x++) {
-            if (mask(point1.first + x,point1.second + y,0)<128){
-                for (int channel = 0; channel < c; channel++) {
-                    int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
-                    sum += diff * diff;}
+        if (y>=0 && y<mask.height()){
+            for (int x = -half_patch; x <= half_patch; x++) {
+                if (x>=0 && x<mask.width()){
+                    if (mask(point1.first + x,point1.second + y,0)<128){
+                        for (int channel = 0; channel < c; channel++) {
+                            int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
+                            sum += diff * diff;
+                        }
+                    }
+                }
             }
         }
     }
-
     return sum;
 }
 
@@ -131,81 +135,22 @@ int Image::ssd(Point point1, Point point2,int patch_size) const{
     int sum = 0;
 
     for (int y = -half_patch; y <= half_patch; y++) {
-        for (int x = -half_patch; x <= half_patch; x++) {
-            for (int channel = 0; channel < c; channel++) {
-                int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
-                sum += diff * diff;}
+        if (y>=0 && y<height()){
+            for (int x = -half_patch; x <= half_patch; x++) {
+                if (x>=0 && x<width()){
+                    for (int channel = 0; channel < c; channel++) {
+                        int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
+                        sum += diff * diff;
+                    }
+                }
+            }
 
         }
     }
-
     return sum;
 }
 
-/*
-Image Image::createSSDImage(int patchSize, int ip) const {
-    int width = this->width();
-    int height = this->height();
-    Image grayImage(width, height, 1); // c=1 (gris)
 
-    int numpatchs = (width - patchSize + 1) * (height - patchSize + 1);
-    int* centers = this->listPatchCenters(patchSize);
-
-    int xp = centers[2 * ip];
-    int yp = centers[2 * ip + 1];
-
-    float ssdMax = float(0);
-
-    for (int j = 0; j < numpatchs; ++j) {
-        int x2 = centers[2 * j];
-        int y2 = centers[2 * j + 1];
-        int ssd_patch = this->ssd(xp, yp, x2, y2, (*this),patchSize);
-        ssdMax = std::max(ssdMax, static_cast<float>(ssd_patch)); //Attention il est sans doute nécessaire de
-    }
-
-    //etape de normalisation
-    for (int j = 0; j < numpatchs; ++j) {
-        int x2 = centers[2 * j];
-        int y2 = centers[2 * j + 1];
-        int ssd_patch = this->ssd(xp, yp, x2, y2,(*this), patchSize);
-        float ssdNormalized = static_cast<float>(ssd_patch) / ssdMax;
-        if (xp==x2 and yp==y2){
-            grayImage(x2, y2) = 255;
-            std::cout<<ssdNormalized * 255.0f<<std::endl;
-            std::cout<<x2<<" "<<y2<<std::endl;} //noir proche, blanc loin
-        else{
-        grayImage(x2, y2) = ssdNormalized * 255.0f;}
-    }
-
-    delete[] centers;
-
-    return grayImage;
-}*/
-
-
-/*
-bool save_image(const char* fileName, const Image& img) {
-    const int w = img.width();
-    const int h = img.height();
-    const int c = img.channels();
-
-    float* out = new float[w * h * c];
-    float* o = out;
-
-    for (int channel = 0; channel < c; ++channel) {
-        for (int y = 0; y < h; ++y) {
-            for (int x = 0; x < w; ++x) {
-                *o++ = img(x, y, channel);
-            }
-        }
-    }
-
-    bool ok = (io_png_write_f32(fileName, out, w, h, c) == 0);
-
-    delete[] out;
-    return ok;
-}
-*/
 
 
 
@@ -371,80 +316,7 @@ void printVector(ConfusionSet const nodeConfusionSet){
 
 
 
-/*
-std::vector<ConfusionSet> Image::assignInitialPriority(const std::vector<Node>& nodes, const Image& maskExtended,
-                                                       int patchSize, int Lmin, int Lmax,
-                                                       int thresholdConfusion, int thresholdSimilarity)const {
-    std::vector<ConfusionSet> confusionSets;
-    confusionSets.reserve(nodes.size());
 
-    for (size_t i=0;i<nodes.size();i++) {
-        std::cout<<i<<"/"<<nodes.size()<<std::endl;
-        int nodeX = nodes[i].getx();
-        int nodeY = nodes[i].gety();
-
-        if (maskExtended.isPatchInsideMask(nodeX, nodeY, patchSize)) {
-            continue;
-        }
-
-
-        std::priority_queue<Belief, std::vector<Belief>, std::greater<Belief> > nodeConfusionSet;
-
-        for (int x = patchSize/2; x < maskExtended.width() - patchSize/2; ++x) {
-            for (int y = patchSize/2; y < maskExtended.height() - patchSize/2; ++y) {
-                if (maskExtended(x, y) >= 128) continue; // Skip non-black pixels
-
-                int potential = ssd(nodeX, nodeY, x, y, patchSize);
-
-                if (nodeConfusionSet.size() < Lmin) {
-                    nodeConfusionSet.push(Belief(Point(x, y), potential));
-                    continue;
-                }
-
-                if (potential < thresholdConfusion &&
-                    (nodeConfusionSet.size() < Lmax || potential < nodeConfusionSet.top().second)) {
-
-                    bool isSimilar = false;
-                    std::vector<Belief> temp;
-                    temp.reserve(nodeConfusionSet.size());
-
-                    while (!nodeConfusionSet.empty()) {
-                        const auto& [coord, _] = nodeConfusionSet.top();
-                        int ssdDistance = ssd(x, y, coord.first, coord.second, patchSize);
-                        if (ssdDistance < thresholdSimilarity) {
-                            isSimilar = true;
-                            break;
-                        }
-                        temp.push_back(nodeConfusionSet.top());
-                        nodeConfusionSet.pop();
-                    }
-
-                    if (!isSimilar) {
-                        nodeConfusionSet.push(Belief(Point(x, y), potential));
-                        if (nodeConfusionSet.size() > Lmax) {
-                            nodeConfusionSet.pop();
-                        }
-                    }
-
-                    for (const auto& item : temp) {
-                        nodeConfusionSet.push(item);
-                    }
-                }
-            }
-        }
-
-        ConfusionSet finalSet;
-        finalSet.reserve(nodeConfusionSet.size());
-        while (!nodeConfusionSet.empty()) {
-            finalSet.push_back(nodeConfusionSet.top());
-            nodeConfusionSet.pop();
-        }
-
-        confusionSets.push_back(std::move(finalSet));
-    }
-
-    return confusionSets;
-}*/
 
 
 double Image::ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize,int w0) const {
