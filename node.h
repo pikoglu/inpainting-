@@ -120,7 +120,9 @@ public:
 
     Label label(int i)const;
 
-    bool similarityCondition(const Image &imageInput,const Point &pointLabel,int thresholdSimilarity , int patchSize);
+    bool similarityCondition(const Image &imageInput,const Label labelCandidate,const Point xq,
+                             int thresholdSimilarity , int patchSize);
+
     void pruningThresholdConfusion(int thresholdCondition,int lmin);
 
     bool inStack(const std::vector<int> &stack);
@@ -138,7 +140,7 @@ public:
         for (int i=0;i<size();i++){
             if (label(i).belief()>bestLabel.belief()){
                 bestLabel=label(i).copy();
-                std::cout<<"0 isnt best label"<<std::cout;
+                std::cout<<"0 isnt best label"<<std::endl;
             }
         }
         return bestLabel;

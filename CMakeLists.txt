@@ -3,7 +3,10 @@ project(Inpainting)
 
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
-#find_package(PNG)
+find_package(OpenMP)
+
+find_package(PNG)
+
 if(NOT PNG_FOUND)
     find_package(ZLIB) # zlib is needed by libPNG
     if(NOT ZLIB_FOUND)
@@ -31,6 +34,13 @@ set(SRC
 
 add_executable(bpInpainting ${SRC})
 target_link_libraries(bpInpainting ${PNG_LIBRARIES})
+
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(bpInpainting PUBLIC OpenMP::OpenMP_CXX)
+    target_compile_options(bpInpainting PRIVATE ${OpenMP_CXX_FLAGS})
+endif()
+
 
 if(UNIX)
     set_target_properties(bpInpainting PROPERTIES

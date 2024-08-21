@@ -20,6 +20,7 @@
 #include "io_png.h"
 #include <iostream>
 #include "node.h"
+//#include <omp.h>
 
 /// Load color image
 Image loadImage(const char* name) {
@@ -54,27 +55,28 @@ int main(int argc, char *argv[]) {
         return 0; //here we only want one picture --> test
     }
 
-    int patchSize=21;
+    int patchSize=30;
     int lmin=3;
     int lmax=20;
-    int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
+    int thresholdConfusion =-patchSize*patchSize*150;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
-    int w0=0;//patchSize*patchSize*1;
+    int w0=patchSize*patchSize*1;//patchSize*patchSize*1;
 
 
 
 
     //imageInput is located in argv[1]+'/baseball.png'
-    std::string imagePath = std::string(argv[1]) +"/baseball.png";
+    std::string imageName="baseball";
+    std::string imagePath = std::string(argv[1]) +"/"+imageName+".png";
     Image imageInput=loadImage(imagePath.c_str());
 
 
-    //The mask is located in argv[1]+'/mask_baseball.png'
-    std::string maskPath = std::string(argv[1]) + "/mask_baseball.png";
+    //The mask is located in argv[1]+'/baseball_mask.png'
+    std::string maskPath = std::string(argv[1]) +"/"+imageName+"_mask.png";
     Image imageMaskTemp=loadImage(maskPath.c_str());
 
-    //Image imageMask(imageMaskTemp.gray().clone());
-    Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(350,235,370,245);
+    Image imageMask(imageMaskTemp.gray().clone());
+    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(23,191,34,202);
 
     if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
         std::cerr << "Error writing file " << std::endl;
@@ -93,6 +95,7 @@ int main(int argc, char *argv[]) {
 
     std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
 
+
     Image maskOverImage= visualiseMaskOverImage(imageInput,imageMask);
 
     if(! save_image(std::string(std::string(argv[1]) + "/maskOverImage.png").c_str(), maskOverImage)) {
@@ -109,7 +112,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error writing file " << std::endl;
         return 1;
     }
-
 
 
 
@@ -139,10 +141,13 @@ int main(int argc, char *argv[]) {
 
     Image orderOfVisit;
 
+    std::cout<<"before crash"<<std::endl;
+
     std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
                                                orderOfVisit,patchSize,thresholdSimilarity,
                                                thresholdConfusion,lmin,lmax,argv[1],w0);
 
+    std::cout<<"after crash"<<std::endl;
 
     pourcentageNoeudPruned(priorities,lmax,lmin);
 
@@ -157,6 +162,16 @@ int main(int argc, char *argv[]) {
 
 
     pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+    commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                              orderOfVisit,patchSize,thresholdSimilarity,
+                              thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
+
 
     Image imageInputCopy=imageInput.clone();
 
@@ -181,6 +196,13 @@ int main(int argc, char *argv[]) {
     }
 
 
+    if(! save_image(std::string(std::string(argv[1]) + "/exemples/"+imageName+"_"
+                                +std::to_string(patchSize)+"_" +std::to_string(lmin)+ "_"
+                                +std::to_string(lmax)+"_" +std::to_string(thresholdConfusion)+ "_"
+                                +std::to_string(thresholdSimilarity)+"_" +std::to_string(w0)+".png").c_str(), reconstructedBlend)) {
+        std::cerr << "Error writing file " << std::endl;
+        return 1;
+    }
 
 
 

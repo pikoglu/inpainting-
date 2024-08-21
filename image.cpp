@@ -21,6 +21,7 @@
 #include <cassert>
 #include <iostream>
 #include <queue>
+#include <cstring>
 
 
 /// Constructor
@@ -118,7 +119,8 @@ int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size)
                 if (x>=0 && x<mask.width()){
                     if (mask(point1.first + x,point1.second + y,0)<128){
                         for (int channel = 0; channel < c; channel++) {
-                            int diff = (*this)(point1.first + x, point1.second + y, channel) - (*this)(point2.first + x, point2.second + y, channel);
+                            int diff = (*this)(point1.first + x, point1.second + y, channel)
+                                        - (*this)(point2.first + x, point2.second + y, channel);
                             sum += diff * diff;
                         }
                     }
@@ -158,6 +160,12 @@ bool save_image(const char* fileName, const Image& img) {
     const int w = img.width();
     const int h = img.height();
     const int c = img.channels();
+    std::cout<<"save 1"<<std::endl;
+    std::cout<<fileName<<std::endl;
+    std::cout<<c<<std::endl;
+
+
+
 
     // Changer le type de float* à unsigned char*
     unsigned char* out = new unsigned char[w * h * c];
@@ -166,13 +174,25 @@ bool save_image(const char* fileName, const Image& img) {
     for (int channel = 0; channel < c; ++channel) {
         for (int y = 0; y < h; ++y) {
             for (int x = 0; x < w; ++x) {
+                if (  std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_48I_240X_135Y_41M.png"
+                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_42I_255X_120Y_41M.png"
+                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_0S_33I_225X_105Y_32M.png"
+                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_42I_255X_120Y_41M.png"){
+                    std::cout<< img(x, y, channel)<<std::endl;
+                }
+
+
                 unsigned char value = static_cast<unsigned char> (img(x, y, channel));
+
                 *o++ = value;
             }
         }
     }
 
+    std::cout<<"save 2"<<std::endl;
+
     bool ok = (io_png_write_u8(fileName, out, w, h, c) == 0);
+    std::cout<<"save 3"<<std::endl;
 
     delete[] out;
     return ok;
@@ -390,4 +410,247 @@ Image Image::simplifyMaskToOnePixel(int x1, int y1, int x2, int y2)const{
         }
     }
     return simplifiedMask;
+}
+
+
+double Image::ssdOverlap_fft(Point n1, Point n2, Point p1, Point p2, int patchSize, int w0) const {
+    double ssd = 0;
+
+    // Determine the overlap type
+    int overlapType = getOverlapType(n1, n2, patchSize);
+
+    // Extract overlapping regions based on overlap type
+    std::vector<std::complex<float> > patch1, patch2;
+    int overlapWidth, overlapHeight;
+
+    switch(overlapType) {
+    case 1: // node 1 on the left
+    case 2: // node 2 on the left
+        overlapWidth = patchSize / 2 + 1;
+        overlapHeight = patchSize;
+        extractOverlapPatches(p1, p2, patchSize, overlapWidth, overlapHeight, overlapType, patch1, patch2);
+        break;
+    case 3: // n1 on the bottom
+    case 4: // n2 on the bottom
+        overlapWidth = patchSize;
+        overlapHeight = patchSize / 2 + 1;
+        extractOverlapPatches(p1, p2, patchSize, overlapWidth, overlapHeight, overlapType, patch1, patch2);
+        break;
+    default:
+        throw std::runtime_error("Invalid overlap type");
+    }
+
+    ssd = computeFFTBasedSSD(patch1, patch2, overlapWidth, overlapHeight);
+
+    if (std::abs(p1.first - p2.first) - patchSize > 0 && std::abs(p1.second - p2.second) - patchSize > 0) {
+        ssd += w0;
+    }
+
+    return patchSize*patchSize*255*255*3- ssd;
+}
+
+
+int Image::ssd_fft(Point point1, Point point2, int patch_size) const {
+    std::vector<std::complex<float> > patch1 = extractPatch(point1, patch_size);
+    std::vector<std::complex<float> > patch2 = extractPatch(point2, patch_size);
+
+    int padded_size = nextPowerOf2(patch_size);
+    std::vector<std::complex<float> > padded1 = padPatch(patch1, patch_size, padded_size);
+    std::vector<std::complex<float> > padded2 = padPatch(patch2, patch_size, padded_size);
+
+    fft2(padded1.data(), padded_size, padded_size);
+    fft2(padded2.data(), padded_size, padded_size);
+
+    std::vector<std::complex<float> > product(padded_size * padded_size);
+    for (int i = 0; i < padded_size * padded_size; ++i) {
+        product[i] = padded1[i] * std::conj(padded2[i]);
+    }
+
+    ifft2(product.data(), padded_size, padded_size);
+
+    float correlation = product[0].real();
+
+    float sumSquares1 = computeSumSquares(patch1);
+    float sumSquares2 = computeSumSquares(patch2);
+
+    return patch_size*patch_size*255*255*3-static_cast<int>(sumSquares1 + sumSquares2 - 2 * correlation);
+}
+
+
+int Image::ssdMask_fft(Point point1, Point point2, const Image& mask, int patch_size) const {
+    std::vector<std::complex<float> > patch1 = extractPatchMasked(point1, mask, patch_size);
+    std::vector<std::complex<float> > patch2 = extractPatchMasked(point2, mask, patch_size);
+
+    int padded_size = nextPowerOf2(patch_size);
+    std::vector<std::complex<float> > padded1 = padPatch(patch1, patch_size, padded_size);
+    std::vector<std::complex<float> > padded2 = padPatch(patch2, patch_size, padded_size);
+
+    fft2(padded1.data(), padded_size, padded_size);
+    fft2(padded2.data(), padded_size, padded_size);
+
+    std::vector<std::complex<float> > product(padded_size * padded_size);
+    for (int i = 0; i < padded_size * padded_size; ++i) {
+        product[i] = padded1[i] * std::conj(padded2[i]);
+    }
+
+    ifft2(product.data(), padded_size, padded_size);
+
+    float correlation = product[0].real();
+
+    float sumSquares1 = computeSumSquares(patch1);
+    float sumSquares2 = computeSumSquares(patch2);
+
+    return patch_size*patch_size*255*255*3-static_cast<int>(sumSquares1 + sumSquares2 - 2 * correlation);
+}
+
+
+int Image::getOverlapType(Point n1, Point n2, int patchSize) const {
+    if (n1.first + patchSize/2 == n2.first) return 1; // node 1 on the left
+    if (n2.first + patchSize/2 == n1.first) return 2; // node 2 on the left
+    if (n1.second + patchSize/2 == n2.second) return 3; // n1 on the bottom
+    if (n2.second + patchSize/2 == n1.second) return 4; // n2 on the bottom
+    throw std::runtime_error("Invalid node configuration");
+}
+
+
+
+void Image::extractOverlapPatches(Point p1, Point p2, int patchSize, int overlapWidth, int overlapHeight, int overlapType,
+                           std::vector<std::complex<float> >& patch1, std::vector<std::complex<float> >& patch2) const {
+    patch1.resize(overlapWidth * overlapHeight);
+    patch2.resize(overlapWidth * overlapHeight);
+
+    for (int y = 0; y < overlapHeight; ++y) {
+        for (int x = 0; x < overlapWidth; ++x) {
+            int x1, y1, x2, y2;
+            switch(overlapType) {
+            case 1: // node 1 on the left
+                x1 = p1.first + patchSize/2 - overlapWidth + 1 + x;
+                y1 = p1.second - patchSize/2 + y;
+                x2 = p2.first - patchSize/2 + x;
+                y2 = p2.second - patchSize/2 + y;
+                break;
+            case 2: // node 2 on the left
+                x1 = p1.first - patchSize/2 + x;
+                y1 = p1.second - patchSize/2 + y;
+                x2 = p2.first + patchSize/2 - overlapWidth + 1 + x;
+                y2 = p2.second - patchSize/2 + y;
+                break;
+            case 3: // n1 on the bottom
+                x1 = p1.first - patchSize/2 + x;
+                y1 = p1.second + y;
+                x2 = p2.first - patchSize/2 + x;
+                y2 = p2.second - patchSize/2 + y;
+                break;
+            case 4: // n2 on the bottom
+                x1 = p1.first - patchSize/2 + x;
+                y1 = p1.second - patchSize/2 + y;
+                x2 = p2.first - patchSize/2 + x;
+                y2 = p2.second + y;
+                break;
+            default:
+                throw std::runtime_error("Invalid overlap type");
+            }
+
+            float value1 = 0, value2 = 0;
+            for (int d = 0; d < c; ++d) {
+                value1 += (*this)(x1, y1, d);
+                value2 += (*this)(x2, y2, d);
+            }
+            patch1[y * overlapWidth + x] = value1 / c;
+            patch2[y * overlapWidth + x] = value2 / c;
+        }
+    }
+}
+
+
+
+double Image::computeFFTBasedSSD(const std::vector<std::complex<float> >& patch1, const std::vector<std::complex<float> >& patch2,
+                          int width, int height) const {
+    int paddedSize = nextPowerOf2(width);
+
+    std::vector<std::complex<float> > padded1 = padPatch(patch1, width, height, paddedSize, paddedSize);
+    std::vector<std::complex<float> > padded2 = padPatch(patch2, width, height, paddedSize, paddedSize);
+
+    fft2(padded1.data(), paddedSize, paddedSize);
+    fft2(padded2.data(), paddedSize, paddedSize);
+
+    std::vector<std::complex<float> > product(paddedSize * paddedSize);
+    for (size_t i = 0; i < product.size(); ++i) {
+        product[i] = padded1[i] * std::conj(padded2[i]);
+    }
+
+    ifft2(product.data(), paddedSize, paddedSize);
+
+    float correlation = product[0].real();
+    float sumSquares1 = computeSumSquares(patch1);
+    float sumSquares2 = computeSumSquares(patch2);
+
+    return sumSquares1 + sumSquares2 - 2 * correlation;
+}
+
+
+std::vector<std::complex<float> > Image::extractPatchMasked(Point center, const Image& mask, int patch_size) const {
+    std::vector<std::complex<float> > patch(patch_size * patch_size, 0);
+    int half_patch = patch_size / 2;
+    for (int y = -half_patch; y <= half_patch; ++y) {
+        int j = center.second + y;
+        if (j >= 0 && j < mask.height()) {
+            for (int x = -half_patch; x <= half_patch; ++x) {
+                int i = center.first + x;
+                if (i >= 0 && i < mask.width()) {
+                    if (mask(i, j, 0) < 128) {
+                        float value = 0;
+                        for (int d = 0; d < c; ++d) {
+                            value += (*this)(i, j, d);
+                        }
+                        value /= c;  // Average over channels
+                        patch[(y + half_patch) * patch_size + (x + half_patch)] = value;
+                    }
+                }
+            }
+        }
+    }
+    return patch;
+}
+
+
+std::vector<std::complex<float> > Image::extractPatch(Point center, int patch_size) const {
+    std::vector<std::complex<float> > patch(patch_size * patch_size);
+    int half_patch = patch_size / 2;
+    for (int y = -half_patch; y <= half_patch; ++y) {
+        for (int x = -half_patch; x <= half_patch; ++x) {
+            if (x>=0 && x<width() && y>=0 && y<height()){
+                float value = 0;
+                for (int d = 0; d < c; ++d) {
+                    value += (*this)(center.first + x, center.second + y, d);
+                }
+                value /= c;  // Average over channels
+                patch[(y + half_patch) * patch_size + (x + half_patch)] = value;
+            }
+        }
+    }
+    return patch;
+}
+
+
+std::vector<std::complex<float> > Image::padPatch(const std::vector<std::complex<float> >& patch, int orig_size, int padded_size) const {
+    std::vector<std::complex<float> > padded(padded_size * padded_size, 0);
+    for (int y = 0; y < orig_size; ++y) {
+        for (int x = 0; x < orig_size; ++x) {
+            padded[y * padded_size + x] = patch[y * orig_size + x];
+        }
+    }
+    return padded;
+}
+
+
+std::vector<std::complex<float> > Image::padPatch(const std::vector<std::complex<float> >& patch, int origWidth, int origHeight,
+                                           int paddedWidth, int paddedHeight) const {
+    std::vector<std::complex<float> > padded(paddedWidth * paddedHeight, 0);
+    for (int y = 0; y < origHeight; ++y) {
+        for (int x = 0; x < origWidth; ++x) {
+            padded[y * paddedWidth + x] = patch[y * origWidth + x];
+        }
+    }
+    return padded;
 }

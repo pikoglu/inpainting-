@@ -77,73 +77,40 @@ public:
 
     Image simplifyMaskToOnePixel(int x1,int y1,int x2,int y2)const;
 
+    double ssdOverlap_fft(Point n1, Point n2, Point p1, Point p2, int patchSize, int w0) const ;
+
+    int ssd_fft(Point point1, Point point2, int patch_size) const ;
+
+    int ssdMask_fft(Point point1, Point point2, const Image& mask, int patch_size) const ;
 
 
-    int ssd_fft(Point point1, Point point2, int patch_size) const {
-        // 1. Extract patches
-        std::vector<std::complex<float> > patch1 = extractPatch(point1, patch_size);
-        std::vector<std::complex<float> > patch2 = extractPatch(point2, patch_size);
 
-        // 2. Pad patches to nearest power of 2
-        int padded_size = nextPowerOf2(patch_size);
-        std::vector<std::complex<float> > padded1 = padPatch(patch1, patch_size, padded_size);
-        std::vector<std::complex<float> > padded2 = padPatch(patch2, patch_size, padded_size);
-
-        // 3. Compute 2D FFTs
-        fft2(padded1.data(), padded_size, padded_size);
-        fft2(padded2.data(), padded_size, padded_size);
-
-        // 4. Multiply FFTs (with complex conjugate)
-        std::vector<std::complex<float> > product(padded_size * padded_size);
-        for (int i = 0; i < padded_size * padded_size; ++i) {
-            product[i] = padded1[i] * std::conj(padded2[i]);
-        }
-
-        // 5. Compute inverse FFT
-        ifft2(product.data(), padded_size, padded_size);
-
-        // 6. Extract relevant part (this is now our correlation)
-        float correlation = product[0].real();
-
-        // 7. Compute sums of squares from original patches
-        float sumSquares1 = computeSumSquares(patch1);
-        float sumSquares2 = computeSumSquares(patch2);
-
-        // 8. Combine results
-        return static_cast<int>(sumSquares1 + sumSquares2 - 2 * correlation);
-    }
 
 private:
-    // Helper functions
-    std::vector<std::complex<float> > extractPatch(Point center, int patch_size) const {
-        std::vector<std::complex<float> > patch(patch_size * patch_size);
-        int half_patch = patch_size / 2;
-        for (int y = -half_patch; y <= half_patch; ++y) {
-            for (int x = -half_patch; x <= half_patch; ++x) {
-                int i = center.first + x;
-                int j = center.second + y;
-                if (i >= 0 && i < w && j >= 0 && j < h) {
-                    float value = 0;
-                    for (int d = 0; d < c; ++d) {
-                        value += (*this)(i, j, d);
-                    }
-                    value /= c;  // Average over channels
-                    patch[(y + half_patch) * patch_size + (x + half_patch)] = value;
-                }
-            }
-        }
-        return patch;
-    }
 
-    std::vector<std::complex<float> > padPatch(const std::vector<std::complex<float> >& patch, int orig_size, int padded_size) const {
-        std::vector<std::complex<float> > padded(padded_size * padded_size, 0);
-        for (int y = 0; y < orig_size; ++y) {
-            for (int x = 0; x < orig_size; ++x) {
-                padded[y * padded_size + x] = patch[y * orig_size + x];
-            }
-        }
-        return padded;
-    }
+    int getOverlapType(Point n1, Point n2, int patchSize) const ;
+
+
+    void extractOverlapPatches(Point p1, Point p2, int patchSize, int overlapWidth, int overlapHeight, int overlapType,
+                               std::vector<std::complex<float> >& patch1, std::vector<std::complex<float> >& patch2) const ;
+
+    double computeFFTBasedSSD(const std::vector<std::complex<float> >& patch1, const std::vector<std::complex<float> >& patch2,
+                              int width, int height) const ;
+
+
+
+    std::vector<std::complex<float> > extractPatchMasked(Point center, const Image& mask, int patch_size) const ;
+
+    std::vector<std::complex<float> > extractPatch(Point center, int patch_size) const ;
+
+
+    std::vector<std::complex<float> > padPatch(const std::vector<std::complex<float> >& patch, int orig_size, int padded_size) const ;
+
+
+    std::vector<std::complex<float> > padPatch(const std::vector<std::complex<float> >& patch, int origWidth, int origHeight,
+                                               int paddedWidth, int paddedHeight) const ;
+
+
 
     int nextPowerOf2(int n) const {
         return static_cast<int>(std::pow(2, std::ceil(std::log2(n))));
