@@ -22,6 +22,7 @@
 #include <array>
 #include <complex>
 #include "fft.h"
+#include <stdexcept>
 
 typedef std::array<int, 5> Messages;
 typedef std::pair<int, int> Point;
@@ -37,13 +38,13 @@ typedef std::vector<Belief> ConfusionSet;
 /// The channels of a color image are interlaced, meaning RGBRGB...
 class Image {
     int* count; ///< number of shallow copies
-    int* tab; ///< array of pixels
+    unsigned char* tab; ///< array of pixels
     int w, h, c; ///< width, height, channels
     void kill();
 public:
     Image();
     Image(int width, int height, int channels=1);
-    Image(int* pix, int width, int height, int channels=1);
+    Image(unsigned char* pix, int width, int height, int channels=1);
     Image(const Image& I);
     ~Image() { kill(); }
     Image& operator=(const Image& I);
@@ -52,8 +53,20 @@ public:
     int width() const { return w; }
     int height() const { return h; }
     int channels() const { return c; }
-    int  operator()(int i,int j,int d) const { return tab[(j*w+i)*c+d]; }
-    int& operator()(int i,int j,int d)       { return tab[(j*w+i)*c+d]; }
+    unsigned char operator()(int i, int j, int d) const {
+        if (i < 0 || i >= w || j < 0 || j >= h || d < 0 || d >= c) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return tab[(j * w + i) * c + d];
+    }
+
+    // Opérateur pour accès en écriture avec vérification des limites
+    unsigned char& operator()(int i, int j, int d) {
+        if (i < 0 || i >= w || j < 0 || j >= h || d < 0 || d >= c) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return tab[(j * w + i) * c + d];
+    }
     Image gray() const;
 
     //Felix
@@ -71,6 +84,9 @@ public:
 
     double ssdOverlap(Point n1, Point n2, Point p1, Point p2, int patchSize, int w0)const ;
 
+    Image extendPatern(int w,int h) const;
+
+    Image extendedPaternMask(int w,int h)const;
 
 
     bool isPatchInsideMask(Point patchPoint , int patchSize) const;

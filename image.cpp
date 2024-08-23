@@ -31,14 +31,14 @@ Image::Image()
     : count(0), tab(0), w(0), h(0), c(0) {}
 
 Image::Image(int width, int height, int channels)
-    : count(new int(1)), tab(new int[width*height*channels]),
+    : count(new int(1)), tab(new unsigned char[width*height*channels]),
     w(width), h(height), c(channels) {}
 
 
 /// Constructor with array of pixels.
 ///
 /// Make sure it is not deleted during the lifetime of the image.
-Image::Image(int* pix, int width, int height, int channels)
+Image::Image(unsigned char *pix, int width, int height, int channels)
     : count(0), tab(pix), w(width), h(height), c(channels) {}
 
 /// Copy constructor (shallow copy)
@@ -80,7 +80,7 @@ Image Image::gray() const {
         return *this;
     assert(channels() == 3);
     Image out(w,h);
-    const int* in = tab;
+    const unsigned char* in = tab;
     for(int y=0; y<h; y++)
         for(int x=0; x<w; x++, in+=3)
             out(x,y,0) = rgb_to_gray(in[0], in[1], in[2]);
@@ -160,10 +160,6 @@ bool save_image(const char* fileName, const Image& img) {
     const int w = img.width();
     const int h = img.height();
     const int c = img.channels();
-    std::cout<<"save 1"<<std::endl;
-    std::cout<<fileName<<std::endl;
-    std::cout<<c<<std::endl;
-
 
 
 
@@ -174,12 +170,6 @@ bool save_image(const char* fileName, const Image& img) {
     for (int channel = 0; channel < c; ++channel) {
         for (int y = 0; y < h; ++y) {
             for (int x = 0; x < w; ++x) {
-                if (  std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_48I_240X_135Y_41M.png"
-                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_42I_255X_120Y_41M.png"
-                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_0S_33I_225X_105Y_32M.png"
-                    ||std::string(fileName)=="/Users/felixfourreau/Desktop/ProjetStageCourt/data/candidates/1R_4S_42I_255X_120Y_41M.png"){
-                    std::cout<< img(x, y, channel)<<std::endl;
-                }
 
 
                 unsigned char value = static_cast<unsigned char> (img(x, y, channel));
@@ -189,10 +179,7 @@ bool save_image(const char* fileName, const Image& img) {
         }
     }
 
-    std::cout<<"save 2"<<std::endl;
-
     bool ok = (io_png_write_u8(fileName, out, w, h, c) == 0);
-    std::cout<<"save 3"<<std::endl;
 
     delete[] out;
     return ok;
@@ -653,4 +640,66 @@ std::vector<std::complex<float> > Image::padPatch(const std::vector<std::complex
         }
     }
     return padded;
+}
+
+
+Image Image::extendPatern(int width,int height) const{
+    Image extendedPatern(width,height,c);
+    if (w>width || h>height){
+        //raise error
+        throw std::runtime_error("Pattern size is greater than the image size");
+    }
+    for (int y=0;y<h;y++){
+        for (int x=0;x<w;x++){
+            for (int c=0;c<3;c++){
+                extendedPatern(x,y,c)=(*this)(x,y,c);
+            }
+        }
+    }
+    for (int y=0;y<height;y++){
+        for (int x=w;x<width;x++){
+            for (int c=0;c<3;c++){
+                extendedPatern(x,y,c)=0;
+            }
+        }
+    }
+
+    for (int y=h;y<height;y++){
+        for (int x=0;x<width;x++){
+            for (int c=0;c<3;c++){
+                extendedPatern(x,y,c)=0;
+            }
+        }
+    }
+    return extendedPatern;
+}
+
+
+Image Image::extendedPaternMask(int width,int height) const{
+    Image paternMask(width,height,c);
+    if (w>width || h>height){
+        throw std::runtime_error("Pattern size is greater than the image size");
+    }
+
+    for (int c=0;c<3;c++){
+        for (int y=0;y<h;y++){
+            for (int x=0;x<w;x++){
+                paternMask(x,y,c)=0;
+
+            }
+        }
+        for (int y=0;y<height;y++){
+            for (int x=w;x<width;x++){
+                    paternMask(x,y,c)=255;
+
+            }
+        }
+        for (int y=h;y<height;y++){
+            for (int x=0;x<width;x++){
+                paternMask(x,y,c)=255;
+
+            }
+        }
+    }
+    return paternMask;
 }

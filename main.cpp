@@ -20,7 +20,7 @@
 #include "io_png.h"
 #include <iostream>
 #include "node.h"
-//#include <omp.h>
+#include <omp.h>
 
 /// Load color image
 Image loadImage(const char* name) {
@@ -48,14 +48,7 @@ Image loadImage(const char* name) {
 /// Main program
 int main(int argc, char *argv[]) {
 
-
-    if (argc!=2 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
-        std::cout<<argc<<std::endl;
-        std::cout<<"Une seule image demandée"<<std::endl;
-        return 0; //here we only want one picture --> test
-    }
-
-    int patchSize=30;
+    int patchSize=21;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*150;//à diminuer
@@ -66,144 +59,285 @@ int main(int argc, char *argv[]) {
 
 
     //imageInput is located in argv[1]+'/baseball.png'
-    std::string imageName="baseball";
+    std::string imageName="peanuts";
     std::string imagePath = std::string(argv[1]) +"/"+imageName+".png";
-    Image imageInput=loadImage(imagePath.c_str());
+    Image imageInputPrev=loadImage(imagePath.c_str());
 
 
-    //The mask is located in argv[1]+'/baseball_mask.png'
-    std::string maskPath = std::string(argv[1]) +"/"+imageName+"_mask.png";
-    Image imageMaskTemp=loadImage(maskPath.c_str());
+    if (argc==2 ){ //a demander pourquoi argc=2 sur mac et 1 sur windows
 
-    Image imageMask(imageMaskTemp.gray().clone());
-    //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(23,191,34,202);
+        Image imageInput=imageInputPrev.clone();
 
-    if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
+
+
+
+        //The mask is located in argv[1]+'/baseball_mask.png'
+        std::string maskPath = std::string(argv[1]) +"/"+imageName+"_mask.png";
+        Image imageMaskTemp=loadImage(maskPath.c_str());
+
+        Image imageMask(imageMaskTemp.gray().clone());
+        //Image imageMask=imageMaskTemp.simplifyMaskToOnePixel(23,191,34,202);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+        Image imageExtendedMask=imageMask.gray().extendMask(patchSize);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/imageExtendedMask.png").c_str(), imageExtendedMask)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+
+        std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
+
+
+        Image maskOverImage= visualiseMaskOverImage(imageInput,imageMask);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/maskOverImage.png").c_str(), maskOverImage)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+        Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
+
+        // Utile pour enregistrer l'image
+        if(! save_image(std::string(std::string(argv[1]) + "/nodesAndVertices.png").c_str(), nodesAndVertices)){
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+
+
+
+
+
+        std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
+                                                             patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity,argv[1]);
+
+
+
+        Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/confusionSet.png").c_str(), confusionSet)){
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+
+
+
+
+        Image orderOfVisit;
+
+
+        std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                                                   orderOfVisit,patchSize,thresholdSimilarity,
+                                                   thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+        orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                    thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+
+
+        Image imageInputCopy=imageInput.clone();
+
+
+        Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
+
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/reconstructed.png").c_str(), reconstructed)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+        Image reconstructedBlend=imageReconstructedBlend(priorities,patchSize,imageInputCopy,imageMask,lmax);
+
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/reconstructedBlend.png").c_str(), reconstructedBlend)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/exemples/"+imageName+"_"
+                                    +std::to_string(patchSize)+"_" +std::to_string(lmin)+ "_"
+                                    +std::to_string(lmax)+"_" +std::to_string(thresholdConfusion)+ "_"
+                                    +std::to_string(thresholdSimilarity)+"_" +std::to_string(w0)+".png").c_str(), reconstructedBlend)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
     }
 
-    Image imageExtendedMask=imageMask.gray().extendMask(patchSize);
+    if (argc==4){
 
-    if(! save_image(std::string(std::string(argv[1]) + "/imageExtendedMask.png").c_str(), imageExtendedMask)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
+
+        Image imageInput=imageInputPrev.extendPatern(std::stoi(argv[2]),std::stoi(argv[3]));
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/imageInput.png").c_str(), imageInput)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+        Image imageMask=imageInputPrev.extendedPaternMask(std::stoi(argv[2]),std::stoi(argv[3])).gray();
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/imageMask.png").c_str(), imageMask)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+        Image imageExtendedMask=imageMask.gray().extendMask(patchSize);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/imageExtendedMask.png").c_str(), imageExtendedMask)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+        std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
+
+
+        Image maskOverImage= visualiseMaskOverImage(imageInput,imageMask);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/maskOverImage.png").c_str(), maskOverImage)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+        Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
+
+        // Utile pour enregistrer l'image
+        if(! save_image(std::string(std::string(argv[1]) + "/nodesAndVertices.png").c_str(), nodesAndVertices)){
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+
+
+
+
+
+
+        std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
+                                                             patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity,argv[1]);
+
+
+
+        Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
+
+        if(! save_image(std::string(std::string(argv[1]) + "/confusionSet.png").c_str(), confusionSet)){
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+
+
+
+
+        Image orderOfVisit;
+
+        std::cout<<"avant forward"<<std::endl;
+        std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                                                   orderOfVisit,patchSize,thresholdSimilarity,
+                                                   thresholdConfusion,lmin,lmax,argv[1],w0);
+
+        std::cout<<"apres forward"<<std::endl;
+
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+        orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                    thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+        commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                                  orderOfVisit,patchSize,thresholdSimilarity,
+                                  thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+        orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                    thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+        Image imageInputCopy=imageInput.clone();
+
+
+        Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
+
+        std::cout<<"backwardPass fin"<<std::endl;
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/reconstructed.png").c_str(), reconstructed)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+        Image reconstructedBlend=imageReconstructedBlend(priorities,patchSize,imageInputCopy,imageMask,lmax);
+
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/reconstructedBlend.png").c_str(), reconstructedBlend)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
+
+        if(! save_image(std::string(std::string(argv[1]) + "/exemples/"+imageName+"_"
+                                    +std::to_string(patchSize)+"_" +std::to_string(lmin)+ "_"
+                                    +std::to_string(lmax)+"_" +std::to_string(thresholdConfusion)+ "_"
+                                    +std::to_string(thresholdSimilarity)+"_" +std::to_string(w0)+".png").c_str(), reconstructedBlend)) {
+            std::cerr << "Error writing file " << std::endl;
+            return 1;
+        }
+
     }
-
-
-
-
-    std::vector<Node> v=nodesOverMask(imageExtendedMask,patchSize,lmax);
-
-
-    Image maskOverImage= visualiseMaskOverImage(imageInput,imageMask);
-
-    if(! save_image(std::string(std::string(argv[1]) + "/maskOverImage.png").c_str(), maskOverImage)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-
-
-    Image nodesAndVertices=visualiseNodesAndVertices(imageMask,v,patchSize);
-
-    // Utile pour enregistrer l'image
-    if(! save_image(std::string(std::string(argv[1]) + "/nodesAndVertices.png").c_str(), nodesAndVertices)){
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-
-
-
-
-
-
-
-    std::vector<Node> priorities=assignInitialPriority(imageInput,imageExtendedMask,imageMask,
-                                                         patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity,argv[1]);
-
-
-
-    Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
-
-    if(! save_image(std::string(std::string(argv[1]) + "/confusionSet.png").c_str(), confusionSet)){
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-    pourcentageNoeudPruned(priorities,lmax,lmin);
-
-
-
-
-
-
-    Image orderOfVisit;
-
-    std::cout<<"before crash"<<std::endl;
-
-    std::vector<int> commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
-                                               orderOfVisit,patchSize,thresholdSimilarity,
-                                               thresholdConfusion,lmin,lmax,argv[1],w0);
-
-    std::cout<<"after crash"<<std::endl;
-
-    pourcentageNoeudPruned(priorities,lmax,lmin);
-
-
-    if(! save_image(std::string(std::string(argv[1]) + "/order_visit.png").c_str(), orderOfVisit)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
-                                thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
-
-
-
-    pourcentageNoeudPruned(priorities,lmax,lmin);
-
-
-    commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
-                              orderOfVisit,patchSize,thresholdSimilarity,
-                              thresholdConfusion,lmin,lmax,argv[1],w0);
-
-
-    orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
-                                thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
-
-
-    Image imageInputCopy=imageInput.clone();
-
-
-    Image reconstructed=imageReconstructed(priorities,patchSize,imageInput,imageMask);
-
-
-
-    if(! save_image(std::string(std::string(argv[1]) + "/reconstructed.png").c_str(), reconstructed)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-
-    Image reconstructedBlend=imageReconstructedBlend(priorities,patchSize,imageInputCopy,imageMask,lmax);
-
-
-
-    if(! save_image(std::string(std::string(argv[1]) + "/reconstructedBlend.png").c_str(), reconstructedBlend)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
-
-    if(! save_image(std::string(std::string(argv[1]) + "/exemples/"+imageName+"_"
-                                +std::to_string(patchSize)+"_" +std::to_string(lmin)+ "_"
-                                +std::to_string(lmax)+"_" +std::to_string(thresholdConfusion)+ "_"
-                                +std::to_string(thresholdSimilarity)+"_" +std::to_string(w0)+".png").c_str(), reconstructedBlend)) {
-        std::cerr << "Error writing file " << std::endl;
-        return 1;
-    }
-
 
 
 

@@ -267,28 +267,11 @@ void saveNodeCandidate(const Node & nodeCandidate,const Image& imageInput,
                                        std::to_string(nodeCandidate.gety())+"Y_"+
                                        std::to_string(m)+"M.png");
 
-        std::cout<<"inside save debut "<<std::endl;
-        std::cout<<name.c_str()<<std::endl;
-
-
-        std::cout<<candidates.width()<<std::endl;
-        std::cout<<candidates.height()<<std::endl;
-
-
-        //browse throught candidates and show
-        for (int i=0;i<candidates.width();i++){
-            for (int j=0;j<candidates.height();j++){
-                if (candidates(i,j,0)<0 || candidates(i,j,0)>255 || candidates(i,j,1)<0 || candidates(i,j,1)>255 || candidates(i,j,2)<0 || candidates(i,j,2)>255){
-                    std::cout<<"attention"<<std::endl;
-                }
-            }
-        }
 
 
         if (!save_image(name.c_str(),candidates)){
             std::cerr << "Error writing file "+name << std::endl;
         }
-        std::cout<<"inside save fin "<<std::endl;
 
         outFile.open(std::string(path+"/candidates/"+
                                  std::to_string(r)+"R_"+
@@ -299,8 +282,6 @@ void saveNodeCandidate(const Node & nodeCandidate,const Image& imageInput,
                                  std::to_string(m)+"M.txt").c_str(),std::ios::out);
 
         for (size_t i=0;i<nodeCandidate.size();i++){
-
-
             outFile<<nodeCandidate.label(i).point().first<<' '<<nodeCandidate.label(i).point().second<<' '<<nodeCandidate.label(i).belief()<<std::endl;
 
         }
@@ -486,6 +467,7 @@ void Node::createNodeConfusionSet(const Node &sender,
                                   const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,
                                   int thresholdConfusion,int lmin,int lmax,
                                   std::string path,int s,int w0){
+
     if (sender.size()<lmin){
         std::cout<<"createNodeConfusionSet"<<std::endl;
         assert(sender.size()>=lmin);
@@ -502,7 +484,6 @@ void Node::createNodeConfusionSet(const Node &sender,
 
                 Point labelPoint(x,y);
                 Label currentLabel(labelPoint,0);
-                //std::cout<<"sender size :"<<sender.size()<<std::endl;
                 std::pair<double,Point> messageAndPointFromSender=(*this).messageReceived(sender,labelPoint,imageInput,patchSize,w0);
                 double messageFromSender=messageAndPointFromSender.first;
                 if ( messageFromSender<0){
@@ -547,11 +528,14 @@ void Node::createNodeConfusionSet(const Node &sender,
 
     saveNodeCandidate((*this),imageInput,patchSize,path,1,s,sender.getIndex());
 
+
+
 }
 
 void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,
                                   const Image &imageInput,int patchSize,int thresholdSimilarity,
                                   int thresholdConfusion,int lmin,int lmax,std::string path,int s,int w0){
+
     assert((*this).size()>0);
     if ((*this).size()<lmin){
         std::cout<<"updateNodeConfusionSet"<<std::endl;
@@ -564,7 +548,6 @@ void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExte
     }
     std::vector<std::pair<Label,Point> > & receiverNodeConfusionSet=this->getNodeConfusionSet();
 
-    std::cout<<"inside updateNodeConfusionSet avant"<<std::endl;
     for (size_t i=0;i<(*this).size();i++) {
 
             Point labelPoint(receiverNodeConfusionSet[i].first.point());
@@ -600,7 +583,6 @@ void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExte
 
     saveNodeCandidate(*this,imageInput,patchSize,path,1,s,sender.getIndex());
 
-    std::cout<<"inside updateNodeConfusionSet apres"<<std::endl;
 
 
 
@@ -721,7 +703,6 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
     int progression=0;
     std::cout<<"initial priority size "<<InitialPriority.size()<<std::endl;
     for (size_t time=0;time<InitialPriority.size();time++){
-        std::cout<<time<<std::endl;
 
         if (time/100>progression){
             progression++;
@@ -733,22 +714,15 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
         }
         Node currentNode(InitialPriority[indexCommitSearch]);
 
-
-
-
-
-
-
-
-
-
         commitStack.push_back(currentNode.getIndex());
         commitList[InitialPriority[indexCommitSearch].getIndex()]=true;
 
         //Temporaire
         for (int x=-patchSize/2;x<=patchSize/2;x++){
             for (int y=-patchSize/2;y<=patchSize/2;y++){
-                orderOfVisit(currentNode.getx() +x,currentNode.gety()+y,0)=int((float(time)-1)/float(InitialPriority.size())*255);
+                if (currentNode.getx() +x>=0 && currentNode.getx() +x<orderOfVisit.width() && currentNode.gety()+y>=0 && currentNode.gety()+y<orderOfVisit.height()){
+                    orderOfVisit(currentNode.getx() +x,currentNode.gety()+y,0)=int((float(time)/float(InitialPriority.size()))*255);
+                }
 
             }
 
@@ -774,8 +748,6 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
             }
         }
 
-        std::cout<<"before crash inside "<<std::endl;
-
         if (currentNode.hasRightNeighbor() && not commitList[currentNode.getRightNeighbor()]) {
             int indexRightNeighbor = getNodeOfIndex(InitialPriority, currentNode.getRightNeighbor());
             if (InitialPriority[indexRightNeighbor].size() == 0) { // interior
@@ -784,16 +756,13 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
                                                                            lmin, lmax,path,time,w0);
             }
             else {
-                std::cout<<"inside if"<<std::endl;
 
                 InitialPriority[indexRightNeighbor].updateNodeConfusionSet(currentNode, imageMaskExtended, imageInput, patchSize,
                                                                            thresholdSimilarity, thresholdConfusion,
                                                                            lmin, lmax,path,time,w0);
-                std::cout<<"inside if sortie"<<std::endl;
 
             }
         }
-        std::cout<<"after crash inside "<<std::endl;
 
         if (currentNode.hasTopNeighbor() && not commitList[currentNode.getTopNeighbor()]) {
             int indexTopNeighbor = getNodeOfIndex(InitialPriority, currentNode.getTopNeighbor());
@@ -836,12 +805,12 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
     for (size_t i = InitialPriority.size(); i-- > 0; ) {//cor
         if (true){//InitialPriority[i].size()>1){
         Point p=InitialPriority[i].point();
-
-            Label l=InitialPriority[i].getBestLabel();
+        Label l=InitialPriority[i].getBestLabel();
         Point lp=l.point();
+
         for (int x=-patchSize/2;x<=patchSize/2;x++){
             for (int y=-patchSize/2;y<=patchSize/2;y++){
-                if (x>0 && x<inputImage.width() && y>0 && y<inputImage.height()){
+                if (p.first+x>0 && p.first+x<inputImage.width() && p.second +y>0 && p.second +y<inputImage.height()){
                     imageReconstructed(p.first+x,p.second +y,0)=inputImage(lp.first+x,lp.second+y,0);
                     imageReconstructed(p.first+x,p.second+y,1)=inputImage(lp.first+x,lp.second+y,1);
                     imageReconstructed(p.first+x,p.second+y,2)=inputImage(lp.first+x,lp.second+y,2);
@@ -854,7 +823,7 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
     for (size_t i = InitialPriority.size(); i-- > 0; ) {
         Point p=InitialPriority[i].point();
         for (int x=-patchSize/2;x<=patchSize/2;x++){
-                if (x>0 && x<inputImage.width()){
+                if (p.first+x>=0 && p.first+x<inputImage.width()){
 
 
                     imageReconstructed(p.first+x,p.second,0)=0;
@@ -863,7 +832,7 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
 
         }
         for (int y=-patchSize/2;y<=patchSize/2;y++){
-                if (y>0 && y<inputImage.height()){
+                if (p.second+y>=0 && p.second+y<inputImage.height()){
                 imageReconstructed(p.first,p.second+y,0)=0;
                 imageReconstructed(p.first,p.second+y,1)=255;
                 imageReconstructed(p.first,p.second+y,2)=255;}
@@ -878,17 +847,17 @@ Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize
 }
 
 
-Image visualizeCandidate(const Node nodeCandidate,const Image &imageInput,int patchSize){
+Image visualizeCandidate(const Node &nodeCandidate,const Image &imageInput,int patchSize){
 
     int size=nodeCandidate.size();
     Image candidate(size*patchSize,patchSize,3);
+
     for (int i=0;i<size;i++){
 
         Label labelCandidate=nodeCandidate.label(i);
         Point p=labelCandidate.point();
         for (int x=-patchSize/2;x<=patchSize/2;x++){
             for (int y=-patchSize/2;y<=patchSize/2;y++){
-                //if p.first+x,p.second+y in Image input else black
 
                 if (p.first+x>=0 && p.first+x<imageInput.width() && p.second+y>=0 && p.second+y<imageInput.height()){
                     candidate(i*patchSize+x+patchSize/2,y+patchSize/2,0)=imageInput(p.first+x,p.second+y,0);
@@ -937,8 +906,8 @@ Image backwardPass(std::vector<Node> &InitialPriority,std::vector<int> commitSta
         //Temporaire
         for (int x=-patchSize/2;x<=patchSize/2;x++){
             for (int y=-patchSize/2;y<=patchSize/2;y++){
+                if (currentNode.getx() +x>=0 && currentNode.getx() +x<orderOfVisit.width() && currentNode.gety()+y>=0 && currentNode.gety()+y<orderOfVisit.height())
                 orderOfVisit(currentNode.getx() +x,currentNode.gety()+y,0)=int((float(time)-1)/float(InitialPriority.size())*255);
-
             }
 
         }
@@ -1093,11 +1062,9 @@ Image getConfusionSet(const std::vector<Node>& priorities,const Image& imageInpu
 }
 
 
-Image imageReconstructedBlend(const std::vector<Node>& InitialPriority, int patchSize, Image inputImage, Image maskImage, int lmax) {
-    std::cout << "reconstructed blend" << std::endl;
-
-    // Create a new image with an additional channel for weights
-    Image blendedImage(inputImage.width(), inputImage.height(), inputImage.channels() + 1);
+Image imageReconstructedBlend(const std::vector<Node>& InitialPriority, int patchSize, Image inputImage, Image maskImage,int lmax) {
+    // Create a 16-channel image for blending (4 * RGBW)
+    Image blendedImage(inputImage.width(), inputImage.height(), 16);
 
     // Initialize blendedImage with zeros
     for (int x = 0; x < blendedImage.width(); x++) {
@@ -1108,95 +1075,94 @@ Image imageReconstructedBlend(const std::vector<Node>& InitialPriority, int patc
         }
     }
 
+    // Process nodes and accumulate color and weight information
     for (const Node& node : InitialPriority) {
         Point p = node.point();
-        const std::vector<std::pair<Label, Point> >& confusionSet = node.getNodeConfusionSet();
+        const std::vector<std::pair<Label, Point>>& confusionSet = node.getNodeConfusionSet();
+
         if (!confusionSet.empty()) {
-            Label bestLabel = confusionSet[0].first; // Assuming the best label is the first in the set
+            Label bestLabel = confusionSet[0].first;
             Point lp = bestLabel.point();
-            float confidence = lmax - confusionSet.size();
+            unsigned char confidence = lmax - confusionSet.size()>255? static_cast<unsigned char>(255): static_cast<unsigned char>(lmax - confusionSet.size());
+
+
+
+            bool blendLeft = node.hasLeftNeighbor();
+            bool blendTop = node.hasTopNeighbor();
+            bool blendRight = node.hasRightNeighbor();
+            bool blendBottom = node.hasBottomNeighbor();
 
             for (int x = -patchSize / 2; x <= patchSize / 2; x++) {
                 for (int y = -patchSize / 2; y <= patchSize / 2; y++) {
-
                     int px = p.first + x;
                     int py = p.second + y;
                     int lpx = lp.first + x;
                     int lpy = lp.second + y;
 
-                    if (px >= 0 && px < blendedImage.width() && py >= 0 && py < blendedImage.height() &&
-                        lpx >= 0 && lpx < inputImage.width() && lpy >= 0 && lpy < inputImage.height()) {
 
-                        // Accumulate weighted color values
-                        for (int channel = 0; channel < inputImage.channels(); channel++) {
-                            blendedImage(px, py, channel) += inputImage(lpx, lpy, channel) * confidence;
+
+                    if (px >= 0 && px < blendedImage.width() && py >= 0 && py < blendedImage.height()) {
+
+                        int channelOffset = 0;
+                        if (blendLeft && x < 0) channelOffset = 0;
+                        else if (blendTop && y < 0) channelOffset = 4;
+                        else if (blendRight && x > 0) channelOffset = 8;
+                        else if (blendBottom && y > 0) channelOffset = 12;
+                        else continue;
+
+                        // Accumulate color values and weight
+                        for (int channel = 0; channel < 3; channel++) {
+                            blendedImage(px, py, channelOffset + channel) = inputImage(lpx, lpy, channel);
+
                         }
 
-                        // Accumulate weight in the last channel
-                        blendedImage(px, py, blendedImage.channels() - 1) += confidence;
 
-
+                        blendedImage(px, py, channelOffset + 3) = confidence;
                     }
                 }
             }
         }
     }
 
-    // Normalize the pixel values by the accumulated weights
-    Image normalizedImage(inputImage.width(), inputImage.height(), inputImage.channels());
-    for (int x = 0; x < normalizedImage.width(); x++) {
-        for (int y = 0; y < normalizedImage.height(); y++) {
-            int weight = blendedImage(x, y, blendedImage.channels() - 1);
-            if (weight > 0) {
-                for (int channel = 0; channel < normalizedImage.channels(); channel++) {
-                    normalizedImage(x, y, channel) = blendedImage(x, y, channel) / weight;
-                }
+    // Create the final RGB image
+    Image finalImage(inputImage.width(), inputImage.height(), 3);
+
+    // Perform weighted average and insert into final image
+    for (int x = 0; x < finalImage.width(); x++) {
+        for (int y = 0; y < finalImage.height(); y++) {
+            float totalWeight = 0;
+            float r = 0, g = 0, b = 0;
+
+            // Calculate weighted average from the 4 neighbors
+            for (int i = 0; i < 4; i++) {
+                int offset = i * 4;
+                float weight = blendedImage(x, y, offset + 3);
+                totalWeight += weight;
+                r += blendedImage(x, y, offset) * weight;
+                g += blendedImage(x, y, offset + 1) * weight;
+                b += blendedImage(x, y, offset + 2) * weight;
+            }
+
+            // Normalize and assign to final image
+
+            if (totalWeight > 0) {
+
+
+                finalImage(x, y, 0) = static_cast<unsigned char>(r / totalWeight);
+                finalImage(x, y, 1) = static_cast<unsigned char>(g / totalWeight);
+                finalImage(x, y, 2) = static_cast<unsigned char>(b / totalWeight);
+
             } else {
-                for (int channel = 0; channel < normalizedImage.channels(); channel++) {
-                    normalizedImage(x, y, channel) = inputImage(x, y, channel);
-                }
+                std::cout<<x<<std::endl;
+                std::cout<<y<<std::endl;
+                std::cout<<std::endl;
+                // Fallback to original image if no weight
+                finalImage(x, y, 0) = inputImage(x, y, 0);
+                finalImage(x, y, 1) = inputImage(x, y, 1);
+                finalImage(x, y, 2) = inputImage(x, y, 2);
             }
         }
     }
 
-
-    for (const Node& node : InitialPriority) {
-        Point p = node.point();
-
-        // Define the regions to blend based on missing neighbors
-        bool blendLeft = !node.hasLeftNeighbor();
-        bool blendTop = !node.hasTopNeighbor();
-        bool blendRight = !node.hasRightNeighbor();
-        bool blendBottom = !node.hasBottomNeighbor();
-
-        // Only proceed if at least one neighbor is missing
-        if (blendLeft || blendTop || blendRight || blendBottom) {
-            for (int x = -patchSize / 2; x <= patchSize / 2; x++) {
-                for (int y = -patchSize / 2; y <= patchSize / 2; y++) {
-                    int px = p.first + x;
-                    int py = p.second + y;
-
-                    if (px >= 0 && px < normalizedImage.width() && py >= 0 && py < normalizedImage.height()) {
-                        bool shouldBlend = false;
-
-                        // Check if this pixel is in a region that should be blended
-                        if ((blendLeft && x < 0) ||
-                            (blendTop && y < 0) ||
-                            (blendRight && x > 0) ||
-                            (blendBottom && y > 0)) {
-                            shouldBlend = true;
-                        }
-
-                        if (shouldBlend) {
-                            // Average with the existing image
-                            for (int channel = 0; channel < normalizedImage.channels(); channel++) {
-                                normalizedImage(px, py, channel) = (normalizedImage(px, py, channel) + inputImage(px, py, channel)) / 2.0f;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return normalizedImage;
+    return finalImage;
 }

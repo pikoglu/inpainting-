@@ -166,7 +166,7 @@ std::vector<int> forwardPass(std::vector<Node> &InitialPriority, const Image &im
 
 Image imageReconstructed(const std::vector<Node> &InitialPriority, int patchSize,Image inputImage,Image maskImage);
 
-Image visualizeCandidate(const Node nodeCandidate,const Image &imageInput,int patchSize);
+Image visualizeCandidate(const Node &nodeCandidate, const Image &imageInput, int patchSize);
 
 Image backwardPass(std::vector<Node> &InitialPriority, std::vector<int> commitStack, const Image &imageInput, const Image &imageMaskExtended, int patchSize, int thresholdSimilarity, int thresholdConfusion, int lmin, int lmax, std::string path, int w0);
 
