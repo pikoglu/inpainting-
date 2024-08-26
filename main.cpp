@@ -48,18 +48,18 @@ Image loadImage(const char* name) {
 /// Main program
 int main(int argc, char *argv[]) {
 
-    int patchSize=21;
+    int patchSize=23;
     int lmin=3;
     int lmax=20;
-    int thresholdConfusion =-patchSize*patchSize*150;//à diminuer
+    int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
-    int w0=patchSize*patchSize*1;//patchSize*patchSize*1;
+    int w0=0;//patchSize*patchSize*10;//patchSize*patchSize*1;
 
 
 
 
     //imageInput is located in argv[1]+'/baseball.png'
-    std::string imageName="peanuts";
+    std::string imageName="baseball";
     std::string imagePath = std::string(argv[1]) +"/"+imageName+".png";
     Image imageInputPrev=loadImage(imagePath.c_str());
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
                                                              patchSize,lmin,lmax,thresholdConfusion,thresholdSimilarity,argv[1]);
 
 
-
+        std::cout<<"after"<<std::endl;
         Image confusionSet=getConfusionSet(priorities,imageInput,patchSize,lmax);
 
         if(! save_image(std::string(std::string(argv[1]) + "/confusionSet.png").c_str(), confusionSet)){

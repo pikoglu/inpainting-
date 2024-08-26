@@ -113,11 +113,17 @@ int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size)
     int half_patch = patch_size / 2;
     int sum = 0;
 
+    int pixelOutsideMask=0;
+
     for (int y = -half_patch; y <= half_patch; y++) {
-        if (y>=0 && y<mask.height()){
             for (int x = -half_patch; x <= half_patch; x++) {
-                if (x>=0 && x<mask.width()){
+                if (point1.first+x>0 && point1.first+x<mask.width() &&
+                    point1.second+y>0 && point1.second+y<mask.height() &&
+                    point2.first+x>0 && point2.first+x<mask.width() &&
+                    point2.second+y>0 && point2.second+y<mask.height() ){
                     if (mask(point1.first + x,point1.second + y,0)<128){
+                        pixelOutsideMask++;
+
                         for (int channel = 0; channel < c; channel++) {
                             int diff = (*this)(point1.first + x, point1.second + y, channel)
                                         - (*this)(point2.first + x, point2.second + y, channel);
@@ -127,8 +133,9 @@ int Image::ssdMask(Point point1, Point point2, Image const &mask,int patch_size)
                 }
             }
         }
-    }
-    return sum;
+    int averageSum=sum/pixelOutsideMask;
+
+        return sum+averageSum*(patch_size*patch_size-pixelOutsideMask);
 }
 
 

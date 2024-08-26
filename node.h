@@ -4,8 +4,11 @@
 #include <iostream>
 #include "image.h"
 #include <limits>
+#include <mutex>
 
 typedef std::pair<int, int> Point;
+
+
 
 class Label {
     Point _point;
@@ -59,6 +62,20 @@ public:
 
 };
 
+
+struct ThreadSafeVector {
+    std::vector<std::pair<Label, Point>> data;
+    std::mutex mutex;
+
+    void push_back(const std::pair<Label, Point>& item) {
+        std::lock_guard<std::mutex> lock(mutex);
+        data.push_back(item);
+    }
+
+    size_t size() const {
+        return data.size();
+    }
+};
 
 
 class Node{
@@ -134,6 +151,8 @@ public:
 
 
     void normalizeMessage();
+
+    bool labelPushedThreadSafe(ThreadSafeVector& safeVector, const Image& imageInput, const Label& label, int lmin, int lmax, int thresholdSimilarity, int patchSize, Point xq);
 
     Label getBestLabel() const{
         Label bestLabel=label(0).copy();

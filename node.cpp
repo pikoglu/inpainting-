@@ -7,6 +7,9 @@
 #endif
 #include <cassert>
 #include <algorithm>
+#include <omp.h>
+
+
 
 Node::Node(int i,Point p,int lmax) {
     index=i;
@@ -87,11 +90,11 @@ bool Node::similarityCondition(const Image &imageInput, const Label labelCandida
 
 
             return false;
+            }
+            return true;
         }
-
     }
     return true;
-    }
 }
 
 bool Node::pushConditioned(const Image &imageInput, const Label& label, int lmin, int lmax, int thresholdSimilarity, int patchSize, Point xq) {
@@ -323,6 +326,7 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
 
 
 
+
         for (int x=patchSize/2;x<imageMaskExtended.width()-patchSize/2;x++) {
             for (int y=patchSize/2;y<imageMaskExtended.height()-patchSize/2;y++){
 
@@ -334,7 +338,9 @@ std::vector<Node> assignInitialPriority( const Image& imageInput,const Image& im
 
 
                     Point labelPoint(x,y);
+
                     int potential=imageInput.ssdMask(nodePoint,labelPoint,imageMask,patchSize);
+
 
                     Label currentLabel(labelPoint,potential);
 
@@ -463,6 +469,121 @@ std::pair<double,Point> Node::messageReceived(  const Node  &sender, const Point
     return  std::pair<double,Point> (bestMessage,bestxq);
 }
 
+
+//Paralelisation
+
+bool Node::labelPushedThreadSafe(ThreadSafeVector& safeVector, const Image& imageInput, const Label& label, int lmin, int lmax, int thresholdSimilarity, int patchSize, Point xq) {
+    bool pushed = false;
+
+    {
+        std::lock_guard<std::mutex> lock(safeVector.mutex);
+
+#pragma omp critical
+        {
+            if (omp_get_num_threads() == 1) {
+                std::cerr << "Attention pas en parallel" << std::endl;
+            }
+        }
+
+        if (safeVector.size() < lmin) {
+            safeVector.data.push_back(std::make_pair(label, xq));
+            pushed = true;
+        }
+        else if (safeVector.size() < lmax) {
+            if ((*this).similarityCondition(imageInput, label, xq, thresholdSimilarity, patchSize)) {
+                safeVector.data.push_back(std::make_pair(label, xq));
+                pushed = true;
+
+                if (safeVector.size() == lmax) {
+                    std::sort(safeVector.data.begin(), safeVector.data.end(), sortArgbelief);
+                }
+            }
+        }
+        else if (label.belief() > safeVector.data.back().first.belief() &&
+                 (*this).similarityCondition(imageInput, label, xq, thresholdSimilarity, patchSize)) {
+            safeVector.data.pop_back();
+            auto it = std::lower_bound(safeVector.data.begin(), safeVector.data.end(),
+                                       std::make_pair(label, xq), sortArgbelief);
+            safeVector.data.insert(it, std::make_pair(label, xq));
+            pushed = true;
+        }
+    }
+
+    return pushed;
+}
+
+void Node::createNodeConfusionSet(const Node &sender,
+                                  const Image &imageMaskExtended, const Image &imageInput, int patchSize, int thresholdSimilarity,
+                                  int thresholdConfusion, int lmin, int lmax,
+                                  std::string path, int s, int w0) {
+    if (!omp_get_nested()) {//je sais pas si nécessaire
+        omp_set_nested(1);
+    }
+
+    if (sender.size() < lmin) {
+        std::cout << "createNodeConfusionSet: sender size < lmin" << std::endl;
+        assert(sender.size() >= lmin);
+    }
+    assert((*this).getIndex() != sender.getIndex());
+
+    ThreadSafeVector safeVector;
+
+#pragma omp parallel
+    {
+#pragma omp for collapse(2) schedule(dynamic)
+
+
+        for (int x = patchSize/2; x < imageMaskExtended.width() - patchSize/2; x++) {
+            for (int y = patchSize/2; y < imageMaskExtended.height() - patchSize/2; y++) {
+
+                if (imageMaskExtended(x,y,0) < 128) { //black pixel ==> possible label candidate
+                    Point labelPoint(x,y);
+                    Label currentLabel(labelPoint,0);
+                    std::pair<double,Point> messageAndPointFromSender = (*this).messageReceived(sender, labelPoint, imageInput, patchSize, w0);
+                    double messageFromSender = messageAndPointFromSender.first;
+
+                    if (messageFromSender < 0) {
+                        assert(messageFromSender >= 0);
+                    }
+
+                    // Set message based on sender's position
+                    if (sender.point().first == patchSize/2 + (*this).point().first) {
+                        currentLabel.setMessageFromRight(messageFromSender);
+                    }
+                    else if (sender.point().first + patchSize/2 == (*this).point().first) {
+                        currentLabel.setMessageFromLeft(messageFromSender);
+                    }
+                    else if (sender.point().second == patchSize/2 + (*this).point().second) {
+                        currentLabel.setMessageFromTop(messageFromSender);
+                    }
+                    else if (sender.point().second + patchSize/2 == (*this).point().second) {
+                        currentLabel.setMessageFromBottom(messageFromSender);
+                    }
+                    else {
+                        std::cout << "message node from neighbor createNodeConfusionSet" << std::endl;
+                    }
+
+                    labelPushedThreadSafe(safeVector, imageInput, currentLabel, lmin, lmax, thresholdSimilarity, patchSize, messageAndPointFromSender.second);
+                }
+            }
+        }
+    }
+
+    // After parallel section, copy results to nodeConfusionSet
+    nodeConfusionSet = std::move(safeVector.data);
+
+    if ((*this).size() < lmin) {
+        std::cout << "createNodeConfusionSet: this size < lmin" << std::endl;
+        assert((*this).size() >= lmin);
+    }
+
+    (*this).pruningThresholdConfusion(thresholdConfusion, lmin);
+    saveNodeCandidate((*this), imageInput, patchSize, path, 1, s, sender.getIndex());
+}
+
+//fin paralelisation
+
+/*
 void Node::createNodeConfusionSet(const Node &sender,
                                   const Image &imageMaskExtended,const Image &imageInput,int patchSize,int thresholdSimilarity,
                                   int thresholdConfusion,int lmin,int lmax,
@@ -530,7 +651,7 @@ void Node::createNodeConfusionSet(const Node &sender,
 
 
 
-}
+}*/
 
 void Node::updateNodeConfusionSet(const Node &sender, const Image &imageMaskExtended,
                                   const Image &imageInput,int patchSize,int thresholdSimilarity,
@@ -1153,9 +1274,6 @@ Image imageReconstructedBlend(const std::vector<Node>& InitialPriority, int patc
                 finalImage(x, y, 2) = static_cast<unsigned char>(b / totalWeight);
 
             } else {
-                std::cout<<x<<std::endl;
-                std::cout<<y<<std::endl;
-                std::cout<<std::endl;
                 // Fallback to original image if no weight
                 finalImage(x, y, 0) = inputImage(x, y, 0);
                 finalImage(x, y, 1) = inputImage(x, y, 1);
@@ -1166,3 +1284,8 @@ Image imageReconstructedBlend(const std::vector<Node>& InitialPriority, int patc
 
     return finalImage;
 }
+
+
+
+
+
