@@ -48,18 +48,18 @@ Image loadImage(const char* name) {
 /// Main program
 int main(int argc, char *argv[]) {
 
-    int patchSize=23;
+    int patchSize=21;
     int lmin=3;
     int lmax=20;
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
-    int w0=0;//patchSize*patchSize*10;//patchSize*patchSize*1;
+    int w0=patchSize*patchSize*1;//patchSize*patchSize*1;
 
 
 
 
     //imageInput is located in argv[1]+'/baseball.png'
-    std::string imageName="baseball";
+    std::string imageName="fleurs";
     std::string imagePath = std::string(argv[1]) +"/"+imageName+".png";
     Image imageInputPrev=loadImage(imagePath.c_str());
 
@@ -162,7 +162,20 @@ int main(int argc, char *argv[]) {
         pourcentageNoeudPruned(priorities,lmax,lmin);
 
 
+        commitStack =forwardPass(priorities,imageInput,imageExtendedMask,
+                                  orderOfVisit,patchSize,thresholdSimilarity,
+                                  thresholdConfusion,lmin,lmax,argv[1],w0);
 
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
+
+
+        orderOfVisit=backwardPass(priorities,commitStack,imageInput,imageExtendedMask,patchSize,
+                                    thresholdSimilarity,thresholdConfusion,lmin,lmax,argv[1],w0);
+
+
+
+        pourcentageNoeudPruned(priorities,lmax,lmin);
 
         Image imageInputCopy=imageInput.clone();
 
