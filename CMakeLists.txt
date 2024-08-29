@@ -3,7 +3,6 @@ project(Inpainting)
 
 set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
-find_package(OpenMP)
 find_package(PNG)
 
 if(NOT PNG_FOUND)
@@ -41,6 +40,7 @@ set(SRC
 add_executable(bpInpainting ${SRC})
 target_link_libraries(bpInpainting PRIVATE PNG::PNG)
 
+#find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     target_link_libraries(bpInpainting PUBLIC OpenMP::OpenMP_CXX)
     target_compile_options(bpInpainting PRIVATE ${OpenMP_CXX_FLAGS})
