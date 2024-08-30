@@ -51,12 +51,29 @@ int main(int argc, char *argv[]) {
     int patchSize=21;
     int lmin=3;
     int lmax=20;
+
+    CmdLine cmd;
+    cmd.add( make_option('p',patchSize,"patch-size")
+             .doc("Patch size") );
+    cmd.add( make_option(0,lmin,"lmin")
+             .doc("Min labels in confusion set after pruning"));
+    cmd.add( make_option(0,lmax,"lmax")
+             .doc("Max labels in confusion set after pruning"));
+
+    try {
+        cmd.process(argc, argv);
+    } catch(std::string str) {
+        std::cerr << "Error: " << str << std::endl<<std::endl;
+        argc=1; // To display usage
+    }
+    if(argc!=2 && argc!=4) {
+        std::cerr << "Usage: " << argv[0] << " folderOutput [? ?]\n" << cmd;
+        return 1;
+    }
+
     int thresholdConfusion =-patchSize*patchSize*600;//à diminuer
     int thresholdSimilarity=patchSize*patchSize*600;//à diminuer
     int w0=patchSize*patchSize*1;//patchSize*patchSize*1;
-
-
-
 
     //imageInput is located in argv[1]+'/baseball.png'
     std::string imageName="fleurs";
